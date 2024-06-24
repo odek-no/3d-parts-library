@@ -18,12 +18,12 @@ module microbit_connector(pins_to_show = [], pin_text = "40...1", anchor = CENTE
   pin_width = 0.5;
   pin_distance = 1.278;
 
-  degree = 30;
+  degree = 40;
   connector_rests_side_width = 11.6;
   connector_rests_middle_width = 24.3;
 
-  well_offset_z = degree == 30 ? 6 : 0;
-  well_offset_y = degree == 30 ? 0.4 : 0;
+  well_offset_z = degree == 40 ? 7.2 : 0;
+  well_offset_y = degree == 40 ? 0.3 : 0;
 
   connector_x = 57.2;
   connector_y = 10.5;
@@ -35,7 +35,7 @@ module microbit_connector(pins_to_show = [], pin_text = "40...1", anchor = CENTE
   fastener_y = 3;
   fastener_spacing = connector_x - fastener_x + 2;
   total_x = fastener_spacing + fastener_x;
-  total_y = 21;
+  total_y = 22.5;
   total_z = wall + 10; // this is not accurate, but it's good enough for now
 
   size = [ total_x, total_y, total_z ];
@@ -44,7 +44,7 @@ module microbit_connector(pins_to_show = [], pin_text = "40...1", anchor = CENTE
   {
     down(total_z / 2) zrot(180) tag_diff("keep", keep = "keep_always") cuboid([ total_x, total_y, wall ], anchor = BOT)
     {
-      fwd(1.1)
+      fwd(0.1)
       {
         xrot(degree)
         {
@@ -65,15 +65,15 @@ module microbit_connector(pins_to_show = [], pin_text = "40...1", anchor = CENTE
       // Holes for fasteners
       position(TOP + BACK) xcopies(n = 2, spacing = fastener_spacing)
       {
-        cuboid([ fastener_x, fastener_y, 2 ], anchor = BOT + BACK)
+        cuboid([ fastener_x, fastener_y, 3 ], anchor = BOT + BACK)
         {
           fastener_extra_y_to_remove_from_fastener_base = 0.5;
           // These values need to be adjusted if angle is changed
-          back(0.70095) down(0.61605) xrot(degree) position(TOP)
-            cuboid([ fastener_x, fastener_y, 5.8 + 2 + 1 ], anchor = BOT)
+
+          back(1.32) down(0.6) xrot(degree) position(TOP) cuboid([ fastener_x, fastener_y, 5.8 + 6 ], anchor = BOT)
           {
-            tag("remove") position(CENTER + BACK) down(1) back(extra_for_better_removal)
-              cuboid([ 1.6, fastener_y + fastener_extra_y_to_remove_from_fastener_base, 5.8 ], anchor = CENTER + BACK);
+            tag("remove") position(TOP + BACK) down(2) back(extra_for_better_removal)
+              cuboid([ 1.6, fastener_y + fastener_extra_y_to_remove_from_fastener_base, 5.8 ], anchor = TOP + BACK);
           }
         }
       }
@@ -107,7 +107,7 @@ module microbit_connector_hole(wall, anchor = CENTER, spin = 0, orient = UP)
   fastener_x = 5.6;
   fastener_spacing = connector_x - fastener_x + 2;
   total_x = fastener_spacing + fastener_x;
-  total_y = 21;
+  total_y = 22.5;
   total_z = wall + extra_for_better_removal;
 
   // This only works if anchor is BOT where this is attatched
@@ -122,7 +122,7 @@ module microbit_connector_hole(wall, anchor = CENTER, spin = 0, orient = UP)
 module microbit_battery_pack(anchor = CENTER, spin = 0, orient = UP)
 {
   battery_pack_space_x = 53.5;
-  battery_pack_space_y = 26.5;
+  battery_pack_space_y = 25.8;
   battery_pack_space_z = 15.0;
   attachable(anchor = anchor, spin = spin, orient = orient,
              size = [ battery_pack_space_x, battery_pack_space_y, battery_pack_space_z ])
@@ -148,18 +148,22 @@ module microbit_battery_pack_wire_hole(wall, anchor = CENTER, spin = 0, orient =
 module microbit_connector_fastener()
 {
   connector_fastener_w = 2.4;
-  connector_fastener_l = 10;
+  connector_fastener_w_max = 5.4;
+  connector_fastener_l = 11;
   connector_fastener_h = 1.5;
   connector_fastener_head_size = 3;
-  connector_fastener_head_y = connector_fastener_w + 6;
+  connector_fastener_head_y = 8;
 
   cuboid([ connector_fastener_l + connector_fastener_head_size / 2, connector_fastener_w, connector_fastener_h ],
-         anchor = BOT, chamfer = connector_fastener_h / 2, edges = [RIGHT], except = [BOT])
+         anchor = BOT, chamfer = connector_fastener_h / 2, edges = [RIGHT])
   {
-    back(2) position(BOT + LEFT + BACK)
+    back((connector_fastener_head_y - connector_fastener_w_max) / 2) position(BOT + LEFT + BACK)
       cuboid([ connector_fastener_head_size, connector_fastener_head_y, connector_fastener_h ], anchor = BOT + BACK,
              rounding = 0);
 
-    fwd(3.5) position(BOT) xcyl(d = 1.1, h = connector_fastener_l + connector_fastener_head_size / 2, anchor = BOT);
+    // fwd(3.5) position(BOT) xcyl(d = 1.1, h = connector_fastener_l + connector_fastener_head_size / 2, anchor = BOT);
+
+    position(BOT + LEFT + BACK)
+      cuboid([ 8, connector_fastener_w_max, connector_fastener_h ], anchor = BOT + LEFT + BACK);
   }
 }

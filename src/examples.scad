@@ -1,33 +1,20 @@
 // clang-format off
 include<box.scad>;
+include<el-parts.scad>;
+include<jst.scad>;
+include<microbit.scad>;
 // clang-format on
-
 $slop = 0.08;
-wall = 2;
 
-controller_x = 60;
-controller_y = 100;
-controller_z = 20;
+part = "button_cap";
 
-part = "box";
-
-if (part == "preview")
+if (part == "box")
 {
-  xdistribute(spacing = 100)
-  {
-    box_with_sliding_close(controller_x, controller_y, controller_z, wall);
-    lid_for_box_with_sliding_close(controller_x, controller_y, controller_z, wall);
-    button_grid(n = [ 2, 3 ], show_fasteners_x = true, show_fasteners_y = true);
-    button_fastener(n = 2);
-  }
-}
-else if (part == "box")
-{
-  box_with_sliding_close(controller_x, controller_y, controller_z, wall, inner_walls = [ 40, 20 ]);
+  box_with_sliding_close(64, 104, 20, wall = 2.4, inner_walls = []);
 }
 else if (part == "lid")
 {
-  lid_for_box_with_sliding_close(controller_x, controller_y, controller_z, wall);
+  lid_for_box_with_sliding_close(50, 50, 20, wall = 2.4, $slop = 0.09);
 }
 else if (part == "microbit_connector")
 {
@@ -41,7 +28,23 @@ else if (part == "button_grid")
 {
   button_grid(n = [ 2, 2 ]);
 }
+else if (part == "button_fastener_stick")
+{
+  button_fastener_stick(n = 2);
+}
 else if (part == "button_fastener")
 {
-  button_fastener(n = 2);
+  button_fastener($slop = 0.08);
+}
+else if (part == "button_cap")
+{
+  button_cap();
+}
+else if (part == "jst")
+{
+  xdistribute(spacing = 20)
+  {
+    jst_male(n = 4);
+    jst_female(n = 4);
+  }
 }
