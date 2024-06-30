@@ -6,15 +6,15 @@ include<microbit.scad>;
 // clang-format on
 $slop = 0.08;
 
-part = "button_cap";
+part = "lid";
 
 if (part == "box")
 {
-  box_with_sliding_close(64, 104, 20, wall = 2.4, inner_walls = []);
+  box_sliding(64, 104, 20, wall = 2.4, inner_walls = []);
 }
 else if (part == "lid")
 {
-  lid_for_box_with_sliding_close(50, 50, 20, wall = 2.4, $slop = 0.09);
+  box_sliding_lid(50, 50, 20, wall = 2.4, $slop = 0.09, anchor = BOT);
 }
 else if (part == "microbit_connector")
 {
@@ -38,7 +38,7 @@ else if (part == "button_fastener")
 }
 else if (part == "button_cap")
 {
-  button_cap();
+  button_cap(size = [ 10, 16 ], offset = [ 0, 0 ]);
 }
 else if (part == "jst")
 {
@@ -47,4 +47,7 @@ else if (part == "jst")
     jst_male(n = 4);
     jst_female(n = 4);
   }
+}
+else if (part == "test")
+{
 }

@@ -6,8 +6,6 @@ $fn = $preview ? 64 : 200;
 
 extra_for_better_removal = 0.001;
 
-standard_wall = 2;
-
 mb_x = 51.6;
 mb_y = 42.1;
 
@@ -79,7 +77,7 @@ module microbit_connector(pins_to_show = [], pin_text = "40...1", anchor = CENTE
       }
 
       // Markings for pins
-      color("red") fwd(5.5) position(TOP + BACK)
+      color("red") fwd(5.2) position(TOP + BACK)
       {
         // All the pins for reference
         // xcopies(spacing = pin_distance, n = 40) cuboid([ pin_width, 2, 0.2 ], anchor = BOT + FWD);

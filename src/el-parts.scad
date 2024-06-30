@@ -6,8 +6,6 @@ $fn = $preview ? 64 : 200;
 
 extra_for_better_removal = 0.001;
 
-standard_wall = 2;
-
 module button_grid_hole(wall, n = [ 2, 2 ], spacing = [ 25, 25 ], show_fasteners_x = false, show_fasteners_y = true,
                         anchor = CENTER, spin = 0, orient = UP)
 {
@@ -35,6 +33,7 @@ module button_grid_hole(wall, n = [ 2, 2 ], spacing = [ 25, 25 ], show_fasteners
 module button_grid(n = [ 2, 2 ], spacing = [ 25, 25 ], markings = [ "D", "C", "B", "A" ], show_fasteners_x = false,
                    show_fasteners_y = true, anchor = CENTER, spin = 0, orient = UP)
 {
+  wall = 2;
   grid_margin_to_edge = 1;
 
   button_hole_width = 12.06;
@@ -59,14 +58,14 @@ module button_grid(n = [ 2, 2 ], spacing = [ 25, 25 ], markings = [ "D", "C", "B
   total_y = (n[1] - 1) * spacing[1] + button_hole_length +
             (show_fasteners_y ? button_fastener_thickness * 2 : grid_margin_to_edge * 2);
 
-  total_z = standard_wall + extra_wall + button_fastener_height;
+  total_z = wall + extra_wall + button_fastener_height;
 
   size = [ total_x, total_y, total_z ];
 
   attachable(anchor = anchor, spin = spin, orient = orient, size = size)
   {
     down(total_z / 2) tag_diff("keep", keep = "keep_always")
-      cuboid([ total_x, total_y, standard_wall + extra_wall ], anchor = BOT)
+      cuboid([ total_x, total_y, wall + extra_wall ], anchor = BOT)
     {
       grid_copies(n = n, spacing = spacing)
       {
@@ -75,7 +74,7 @@ module button_grid(n = [ 2, 2 ], spacing = [ 25, 25 ], markings = [ "D", "C", "B
           cuboid([ button_hole_width, button_hole_length, extra_wall + extra_for_better_removal ], anchor = TOP);
         // Hole for button pole
         tag("remove") down(extra_for_better_removal / 2) position(BOT)
-          cyl(d = button_inner_d, h = standard_wall + extra_for_better_removal, anchor = BOT);
+          cyl(d = button_inner_d, h = wall + extra_for_better_removal, anchor = BOT);
 
         if (markings)
         {
@@ -137,7 +136,7 @@ module button_fastener()
   button_hole_size = 12.06;
 
   button_fastener_y = 5.5;
-  button_fastener_y_gap = 9;
+  button_fastener_y_gap = 8;
 
   spring_wall = 0.6;
 
@@ -157,14 +156,14 @@ module button_fastener()
   }
 }
 
-module button_cap(form_svg = "standard_button_cap.svg", size = [ 15, 15 ], offset = 0)
+module button_cap(form_svg = "standard_button_cap.svg", size = [ 15, 15 ], offset = [ 0, 0 ], anchor = CENTER, spin = 0,
+                  orient = UP)
 {
-  cap_size = 14;
-  cap_height = 4;
-  cap_bottom_size = 7;
   wall = 2;
-
+  cap_height = 4;
   cap_fastener_height = 2;
+  cap_fastener_d = 7;
+
   button_pole_top_size = 3.8;
   button_pole_top_height = 3.0;
   button_pole_bottom_size = 1.8;
@@ -175,47 +174,38 @@ module button_cap(form_svg = "standard_button_cap.svg", size = [ 15, 15 ], offse
   button_index = part == "a" ? 0 : part == "b" ? 1 : part == "c" ? 2 : part == "d" ? 3 : 0;
   cap_pole_extra_margin = 0.11;
 
-  offset_y = offset;
+  offset_x = offset[0];
+  offset_y = offset[1];
 
-  difference()
-  {
-    union()
-    {
-      _button_cap_extrude(form_svg, size);
-      up(cap_height) back(offset_y) zcyl(h = cap_fastener_height, d = cap_bottom_size, anchor = BOT);
-    }
-    up(cap_height + cap_fastener_height) back(offset_y) cuboid(
-      [
-        button_pole_top_size + cap_pole_extra_margin, button_pole_top_size + cap_pole_extra_margin,
-        button_pole_height_space
-      ],
-      anchor = TOP);
-  }
-}
-
-module _button_cap_extrude(form_svg, size)
-{
-  cap_size = 14;
-  cap_height = 4;
   rounding = 1;
-  button_max_from_original_sizes = 18;
-  scale_factor = cap_size / button_max_from_original_sizes;
 
-  original_width = size[0];
-  original_height = size[1];
+  width_wo_rounding = size[0] - rounding * 2;
+  height_wo_rounding = size[1] - rounding * 2;
 
-  echo("size", size);
+  total_height = cap_height + cap_fastener_height;
 
-  button_x = original_width * scale_factor;
-  button_y = original_height * scale_factor;
-  echo("button_x", button_x);
-  echo("button_y", button_y);
-
-  // Round off
-  minkowski()
+  attachable(anchor = anchor, spin = spin, orient = orient, size = [ size[0], size[1], total_height ])
   {
-    left(button_x / 2) fwd(button_y / 2) resize([ button_x, button_y, 0 ])
-      linear_extrude(height = cap_height - rounding * 2) import(file = form_svg);
-    up(rounding) sphere(r = rounding);
+    down(total_height / 2) difference()
+    {
+      union()
+      {
+        minkowski()
+        {
+          resize([ width_wo_rounding, height_wo_rounding, 0 ]) linear_extrude(height = cap_height - rounding * 2)
+            import(file = form_svg, center = true);
+          up(rounding) sphere(r = rounding);
+        }
+
+        up(cap_height) right(offset_x) back(offset_y) zcyl(h = cap_fastener_height, d = cap_fastener_d, anchor = BOT);
+      }
+      up(cap_height + cap_fastener_height) right(offset_x) back(offset_y) cuboid(
+        [
+          button_pole_top_size + cap_pole_extra_margin, button_pole_top_size + cap_pole_extra_margin,
+          button_pole_height_space
+        ],
+        anchor = TOP);
+    }
+    children();
   }
 }
