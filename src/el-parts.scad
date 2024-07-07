@@ -161,7 +161,7 @@ module button_cap(form_svg = "standard_button_cap.svg", size = [ 15, 15 ], offse
 {
   wall = 2;
   cap_height = 4;
-  cap_fastener_height = 2;
+  cap_fastener_height = 3;
   cap_fastener_d = 7;
 
   button_pole_top_size = 3.8;
@@ -169,6 +169,7 @@ module button_cap(form_svg = "standard_button_cap.svg", size = [ 15, 15 ], offse
   button_pole_bottom_size = 1.8;
   button_pole_bottom_height = 0.8;
   button_pole_height_space = cap_height + cap_fastener_height - wall;
+  // We need the space for the button cap to be a bit higher than the button pole
   assert(button_pole_height_space > 3.1);
 
   button_index = part == "a" ? 0 : part == "b" ? 1 : part == "c" ? 2 : part == "d" ? 3 : 0;
@@ -199,10 +200,11 @@ module button_cap(form_svg = "standard_button_cap.svg", size = [ 15, 15 ], offse
 
         up(cap_height) right(offset_x) back(offset_y) zcyl(h = cap_fastener_height, d = cap_fastener_d, anchor = BOT);
       }
-      up(cap_height + cap_fastener_height) right(offset_x) back(offset_y) cuboid(
+      up(cap_height + cap_fastener_height + extra_for_better_removal) right(offset_x) back(offset_y) cuboid(
         [
           button_pole_top_size + cap_pole_extra_margin, button_pole_top_size + cap_pole_extra_margin,
-          button_pole_height_space
+          button_pole_height_space +
+          extra_for_better_removal
         ],
         anchor = TOP);
     }

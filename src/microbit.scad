@@ -9,8 +9,6 @@ extra_for_better_removal = 0.001;
 mb_x = 51.6;
 mb_y = 42.1;
 
-height = 10;
-
 module microbit_connector(pins_to_show = [], pin_text = "40...1", anchor = CENTER, spin = 0, orient = UP)
 {
   pin_width = 0.5;
@@ -91,7 +89,8 @@ module microbit_connector(pins_to_show = [], pin_text = "40...1", anchor = CENTE
           }
         }
 
-        back(4.9) text3d(pin_text, h = 0.3, size = 4, font = "Arial", orient = UP, spin = 180, anchor = BOT + FWD);
+        back(4.9) position(RIGHT)
+          text3d(pin_text, h = 0.2, size = 4, font = "Arial", orient = UP, spin = 180, anchor = BOT + FWD + LEFT);
       }
     }
     children();
@@ -163,5 +162,107 @@ module microbit_connector_fastener()
 
     position(BOT + LEFT + BACK)
       cuboid([ 8, connector_fastener_w_max, connector_fastener_h ], anchor = BOT + LEFT + BACK);
+  }
+}
+
+module microbit_soldering_guide(text = "micro:bit", pins_to_show = [], pins_to_bend = [], pin_text = "40...1")
+{
+  pin_width = 0.5;
+  pin_space_width = 0.4;
+  pin_distance = 1.278;
+  bend_length = 5;
+
+  diff() cuboid([ 51.2, 11, 1 ])
+  {
+    position(TOP + FWD) cuboid([ 51.2, 1, 9 ], anchor = TOP + FWD);
+    // Markings for pins
+    color("red") position(TOP + BACK)
+    {
+      // All the pins for reference
+      // xcopies(spacing = pin_distance, n = 40) cuboid([ pin_width, 2, 0.2 ], anchor = BOT + FWD);
+
+      // Walls between pins
+      // fwd(2) down(1) xcopies(spacing = pin_distance, n = 39) cuboid([ pin_space_width, 3, 2 ], anchor = BOT + FWD);
+
+      // Use 40+1 so we can have pin 1 at right(1*pin_distance), etc.
+      fwd(0) right((40 + 1) * pin_distance / 2)
+      {
+        for (pin_to_show = pins_to_show)
+        {
+          left(pin_to_show * pin_distance) { cuboid([ pin_width, 4 + bend_length, 0.2 ], anchor = BOT + BACK); }
+        }
+      }
+
+      right((40 + 1) * pin_distance / 2)
+      {
+        for (pin_to_bend = pins_to_bend)
+        {
+          left(pin_to_bend * pin_distance)
+          {
+            tag("remove") back(extra_for_better_removal) up(1)
+              cuboid([ pin_width * 1.6, bend_length + extra_for_better_removal, 3 ], anchor = TOP + BACK);
+          }
+        }
+      }
+    }
+    color("red") back(1) position(TOP + FWD + LEFT)
+      text3d(pin_text, h = 0.4, size = 4, font = "Arial", orient = UP, spin = 0, anchor = BOT + FWD + LEFT);
+  }
+}
+
+module microbit_soldering_guide_v1(text = "micro:bit", pins_to_show = [], pins_to_bend = [], pin_text = "40...1")
+{
+  pin_width = 0.5;
+  pin_space_width = 0.4;
+  pin_distance = 1.278;
+
+  y_for_the_bender = 1.6;
+
+  diff() cuboid([ 51.2, 12 + y_for_the_bender, 1 ])
+  {
+    position(TOP + FWD) cuboid([ 51.2, y_for_the_bender, 10 ], anchor = TOP + FWD);
+
+    // Holes for the plastic in the connector top
+    tag("remove") down(extra_for_better_removal / 2) position(BOT) xcopies(n = 2, spacing = 26.5)
+      cuboid([ 2, 7.5, 1 + extra_for_better_removal ], anchor = BOT);
+
+    // Markings for pins
+    color("red") position(TOP + FWD)
+    {
+      // All the pins for reference
+      // xcopies(spacing = pin_distance, n = 40) cuboid([ pin_width, 2, 0.2 ], anchor = BOT + FWD);
+
+      // Walls between pins
+      // fwd(2) down(1) xcopies(spacing = pin_distance, n = 39) cuboid([ pin_space_width, 3, 2 ], anchor = BOT + FWD);
+
+      // Use 40+1 so we can have pin 1 at right(1*pin_distance), etc.
+      back(0 + y_for_the_bender) right((40 + 1) * pin_distance / 2)
+      {
+        for (pin_to_show = pins_to_show)
+        {
+          left(pin_to_show * pin_distance) { cuboid([ pin_width, 4, 0.2 ], anchor = BOT + FWD); }
+        }
+      }
+
+      right((40 + 1) * pin_distance / 2)
+      {
+        for (pin_to_bend = pins_to_bend)
+        {
+          left(pin_to_bend * pin_distance)
+          {
+            tag("remove") fwd(extra_for_better_removal) up(extra_for_better_removal)
+              cuboid([ pin_width * 1.5, y_for_the_bender + extra_for_better_removal, 4 + extra_for_better_removal ],
+                     anchor = TOP + FWD);
+          }
+        }
+      }
+
+      back(1.6 + y_for_the_bender) position(LEFT)
+        text3d(pin_text, h = 0.4, size = 4, font = "Arial", orient = UP, spin = 0, anchor = BOT + FWD + LEFT);
+    }
+
+    // Header text
+    fwd(1) color("red") position(TOP + BACK)
+      text3d(text, h = 0.2, size = 4, font = "Arial", orient = UP, spin = 0, anchor = BOT + BACK);
   }
 }

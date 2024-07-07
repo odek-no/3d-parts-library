@@ -92,7 +92,7 @@ module box_rabbet_lid(width, length, height = 10, wall = 1.2, rabbet_wall = 0.8,
 }
 
 module box_sliding(width, length, height, wall = standard_wall, inner_walls = [], inner_wall = standard_inner_wall,
-                   chamfer = 0, rounding = 1.5, anchor = CENTER, spin = 0, orient = UP)
+                   chamfer = 0, rounding = 2, anchor = CENTER, spin = 0, orient = UP)
 {
   empty_x = width - wall * 2;
   empty_y = length - wall * 2;
@@ -177,11 +177,14 @@ module box_sliding_lid(width, length, height, wall = standard_wall, extra_fricti
                  edges = [BOT + BACK + FWD], anchor = TOP + FWD);
       }
 
-      position(BOT + FWD) back(wall - lid_shorter_y)
+      if (!use_friction_lock)
       {
-        tag("remove") box_simple_lock_hole(wall, anchor = BOT + FWD);
+        position(BOT + FWD) back(wall - lid_shorter_y)
+        {
+          tag("remove") box_simple_lock_hole(wall, anchor = BOT + FWD);
 
-        tag("keep") box_simple_lock(wall, anchor = BOT + FWD);
+          tag("keep") box_simple_lock(wall, anchor = BOT + FWD);
+        }
       }
     }
     children();
