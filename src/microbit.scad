@@ -15,6 +15,7 @@ module microbit_connector(pins_to_show = [], pin_text = "40...1", anchor = CENTE
   pin_distance = 1.278;
 
   degree = 40;
+
   connector_rests_side_width = 11.6;
   connector_rests_middle_width = 24.3;
 
@@ -105,6 +106,107 @@ module microbit_connector_hole(wall, anchor = CENTER, spin = 0, orient = UP)
   fastener_spacing = connector_x - fastener_x + 2;
   total_x = fastener_spacing + fastener_x;
   total_y = 22.5;
+  total_z = wall + extra_for_better_removal;
+
+  // This only works if anchor is BOT where this is attatched
+  down(extra_for_better_removal / 2)
+    attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
+  {
+    cuboid([ total_x, total_y, total_z ]);
+    children();
+  }
+}
+
+module microbit_connector_inside(anchor = CENTER, spin = 0, orient = UP)
+{
+  pin_width = 0.5;
+  pin_distance = 1.278;
+
+  connector_rests_side_width = 11.6;
+  connector_rests_middle_width = 24.3;
+
+  connector_x = 57.2;
+  connector_y = 10.5;
+  connector_short_rest_y = 8;
+  connector_z = 10.4;
+
+  wall = 2;
+
+  fastener_x = 7;
+  fastener_hole_width = 1.6;
+  fastener_width_against_center = 0.9;
+  fastener_hole_extra_offset = 0.8;
+  fastener_y = 3;
+  total_x =
+    connector_x + (fastener_x - fastener_width_against_center - fastener_hole_width - fastener_hole_extra_offset) * 2;
+  fastener_spacing = total_x;
+
+  fastener_height = 5.8;
+  fastener_total_height = fastener_height + 2;
+  fastener_offset_z = 1;
+
+  total_y = 18;
+  total_z = wall + fastener_total_height - fastener_offset_z; // this is not accurate, but it's good enough for now
+
+  echo("microbit_connector_inside total_x", total_x);
+
+  size = [ total_x, total_y, total_z ];
+
+  attachable(anchor = anchor, spin = spin, orient = orient, size = size)
+  {
+    down(total_z / 2) tag_diff("keep", keep = "keep_always") cuboid([ total_x, total_y, wall ], anchor = BOT)
+    {
+      // Holes for the connector
+      back(5.4)
+      {
+        tag("remove") position(FWD) xcopies(spacing = 54.4, n = 2)
+          cuboid([ 2.8, connector_y, wall + extra_for_better_removal ], anchor = FWD);
+        tag("remove") position(FWD) back(connector_y - connector_short_rest_y) xcopies(spacing = 26.4, n = 2)
+          cuboid([ 2.1, connector_short_rest_y, wall + extra_for_better_removal ], anchor = FWD);
+      }
+
+      // Holes for the pins
+      tag("remove") position(FWD + BOT) fwd(extra_for_better_removal) down(extra_for_better_removal / 2) cuboid(
+        [ 50.6, fastener_height + extra_for_better_removal, total_z + extra_for_better_removal ], anchor = FWD + BOT);
+      // tag("remove") position(FWD) back(fastener_y)
+      //   cuboid([ 50.4, 5 - fastener_y, wall + extra_for_better_removal ], anchor = FWD);
+
+      // Holes for fasteners
+      position(TOP + FWD) xcopies(n = 2, spacing = fastener_spacing)
+      {
+
+        fastener_extra_y_to_remove_from_fastener_base = 2.5;
+        // These values need to be adjusted if angle is changed
+        offset_anchor = $idx == 0 ? LEFT : RIGHT;
+        offset_anchor_hole = $idx == 0 ? RIGHT : LEFT;
+        offset_x = $idx == 0 ? -1 : 1;
+        down(fastener_offset_z) left(offset_x * 0)
+          cuboid([ fastener_x, fastener_y, fastener_total_height ], anchor = BOT + FWD + offset_anchor)
+        {
+          tag("remove") right(offset_x * fastener_width_against_center) position(BOT + FWD + offset_anchor_hole)
+            fwd(extra_for_better_removal) cuboid(
+              [ fastener_hole_width, fastener_y + fastener_extra_y_to_remove_from_fastener_base, fastener_height ],
+              anchor = BOT + FWD + offset_anchor_hole);
+        }
+      }
+    }
+    children();
+  }
+}
+
+module microbit_connector_inside_hole(wall, anchor = CENTER, spin = 0, orient = UP)
+{
+  // Warning: Numbers repeated
+  connector_x = 57.2;
+  fastener_x = 7;
+  fastener_hole_width = 1.6;
+  fastener_width_against_center = 0.9;
+  fastener_hole_extra_offset = 0.8;
+  fastener_y = 3;
+  total_x =
+    connector_x + (fastener_x - fastener_width_against_center - fastener_hole_width - fastener_hole_extra_offset) * 2;
+
+  total_y = 18;
   total_z = wall + extra_for_better_removal;
 
   // This only works if anchor is BOT where this is attatched
