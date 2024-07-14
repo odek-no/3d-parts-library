@@ -21,8 +21,10 @@ module button_grid_hole(wall, n = [ 2, 2 ], spacing = [ 25, 25 ], show_fasteners
 
   total_z = wall + extra_for_better_removal;
 
+  up_down = orient == UP ? 1 : -1;
+
   // This only works if anchor is BOT where this is attatched
-  down(extra_for_better_removal / 2)
+  down(up_down * extra_for_better_removal / 2)
     attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
   {
     cuboid([ total_x, total_y, total_z ]);
@@ -210,4 +212,118 @@ module button_cap(form_svg = "standard_button_cap.svg", size = [ 15, 15 ], offse
     }
     children();
   }
+}
+
+module four_digit_display_seeed_studio(anchor = CENTER, spin = 0, orient = UP)
+{
+  chip_x = 42.3;
+  chip_y = 24.2;
+  display_x = 30.4;
+  display_y = 14.4;
+  display_z = 7;
+
+  display_offset_x = 3;
+
+  total_x = chip_x;
+  total_y = chip_y;
+  total_z = display_z;
+
+  attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
+  {
+    // We want the center of the display to be the center
+    left(display_offset_x) tag_diff("keep", keep = "keep_always") cuboid([ total_x, total_y, total_z ])
+    {
+      tag("remove") position(RIGHT) left(display_offset_x)
+        cuboid([ display_x, display_y, display_z + extra_for_better_removal ], anchor = RIGHT);
+
+      up(extra_for_better_removal)
+      {
+        tag("remove") position(TOP + RIGHT) ycopies(n = 2, spacing = 20) left(9.2)
+          zcyl(d = 2.3, h = 5 + extra_for_better_removal, anchor = TOP + RIGHT);
+        tag("remove") position(TOP + LEFT) right(0.9)
+          zcyl(d = 2.3, h = 5 + extra_for_better_removal, anchor = TOP + LEFT);
+      }
+    }
+    children();
+  }
+}
+
+module four_digit_display_seeed_studio_hole(wall, anchor = CENTER, spin = 0, orient = UP)
+{
+  // Warning: Numbers repeated
+  chip_x = 42.3;
+  chip_y = 24.2;
+
+  total_x = chip_x;
+  total_y = chip_y;
+  total_z = wall + extra_for_better_removal;
+
+  display_offset_x = 3;
+
+  // This only works if anchor is BOT where this is attatched
+  up_down = orient == UP ? 1 : -1;
+  // We want the center of the display to be the center
+  left(display_offset_x) down(up_down * extra_for_better_removal / 2)
+    attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
+  {
+    cuboid([ total_x, total_y, total_z ]);
+    children();
+  }
+}
+
+module plug_four_digit_display_seeed_studio() { plug_single(d = 2.0, h = 5); }
+
+module small_on_off_switch(anchor = CENTER, spin = 0, orient = UP)
+{
+  // TODO: Make this typical on the back of the box
+  body_x = 8.3;
+  body_y = 14.4;
+
+  switch_x = body_x + 1.2 * 2;
+  switch_y = body_y + 1.2 * 2;
+
+  wall = 2;
+
+  display_offset_x = 2.9;
+
+  total_x = switch_x;
+  total_y = switch_y;
+  total_z = wall;
+
+  attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
+  {
+    tag_diff("keep", keep = "keep_always") cuboid([ total_x, total_y, total_z ])
+    {
+      tag("remove") cuboid([ body_x, body_y, wall + extra_for_better_removal ]);
+    }
+    children();
+  }
+}
+
+module small_on_off_switch_hole(wall, anchor = CENTER, spin = 0, orient = UP)
+{
+  // Warning: Numbers repeated
+  body_x = 8.3;
+  body_y = 14.4;
+
+  switch_x = body_x + 1.2 * 2;
+  switch_y = body_y + 1.2 * 2;
+
+  total_x = switch_x;
+  total_y = switch_y;
+  total_z = wall + extra_for_better_removal;
+
+  // This only works if anchor is BOT where this is attatched
+  up_down = orient == UP ? 1 : -1;
+  down(up_down * extra_for_better_removal / 2)
+    attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
+  {
+    cuboid([ total_x, total_y, total_z ]);
+    children();
+  }
+}
+
+module plug_single(d, h)
+{
+  cuboid([ 3, d + 1, d ]) { position(LEFT + FWD) xcyl(d = d, h = h, anchor = RIGHT + FWD); }
 }
