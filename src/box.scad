@@ -137,8 +137,8 @@ module box_sliding(width, length, height, wall = standard_wall, inner_walls = []
   }
 }
 
-module box_sliding_lid(width, length, height, wall = standard_wall, extra_friction_stops = [], anchor = CENTER,
-                       spin = 0, orient = UP)
+module box_sliding_lid(width, length, wall = standard_wall, extra_friction_stops = [], anchor = CENTER, spin = 0,
+                       orient = UP)
 {
   empty_x = width - wall * 2;
   empty_y = length - wall * 2;
