@@ -1,10 +1,12 @@
 @REM openscad -D "width=50;length=50;height=10;part=\"box_rabbet_lid\"" -o stl/box_rabbet_50x50x10_lid.stl src/box-instances.scad
-@REM openscad -D "width=50;length=50;height=10;part=\"box_rabbet\"" -o stl/box_rabbet_50x50x40.stl src/box-instances.scad
+@REM openscad -D "width=50;length=50;height=2;part=\"box_rabbet_lid\"" -o stl/box_rabbet_50x50x2_lid.stl src/box-instances.scad
+@REM openscad -D "width=50;length=50;height=20;part=\"box_rabbet\"" -o stl/box_rabbet_50x50x20.stl src/box-instances.scad
+openscad -D "width=50;length=50;height=20;part=\"box_sliding\"" -o stl/box_sliding_50x50x20.stl src/box-instances.scad
+openscad -D "width=50;length=50;part=\"box_sliding_lid\"" -o stl/box_sliding_50x50_lid.stl src/box-instances.scad
 
 
-
-openscad -D "width=100;length=100;height=10;part=\"box_rabbet_lid\"" -o stl/box_rabbet_100x100x10_lid.stl src/box-instances.scad
-openscad -D "width=100;length=100;height=90;part=\"box_rabbet\"" -o stl/box_rabbet_100x100x90.stl src/box-instances.scad
+@REM openscad -D "width=100;length=100;height=10;part=\"box_rabbet_lid\"" -o stl/box_rabbet_100x100x10_lid.stl src/box-instances.scad
+@REM openscad -D "width=100;length=100;height=90;part=\"box_rabbet\"" -o stl/box_rabbet_100x100x90.stl src/box-instances.scad
 
 
 
@@ -15,3 +17,11 @@ openscad -D "width=100;length=100;height=90;part=\"box_rabbet\"" -o stl/box_rabb
 
 @REM openscad -D "width=100;length=100;height=100;part=\"box_sliding\"" -o stl/box_sliding_100x100x100.stl src/box-instances.scad
 @REM openscad -D "width=100;length=100;height=100;part=\"box_sliding_lid\"" -o stl/box_sliding_100x100x100_lid.stl src/box-instances.scad
+
+
+
+@REM openscad -D "width=220;length=220;height=60;part=\"box_rabbet\"" -o stl/box_rabbet_220x220x60.stl src/box-instances.scad 
+@REM openscad -D "width=215;length=215;height=50;part=\"box_rabbet\"" -o stl/box_rabbet_215x215x50.stl src/box-instances.scad 
+@REM openscad -D "width=210;length=210;height=40;part=\"box_rabbet\"" -o stl/box_rabbet_210x210x40.stl src/box-instances.scad 
+@REM openscad -D "width=205;length=205;height=30;part=\"box_rabbet\"" -o stl/box_rabbet_205x205x30.stl src/box-instances.scad 
+@REM openscad -D "width=200;length=200;height=20;part=\"box_rabbet\"" -o stl/box_rabbet_200x200x20.stl src/box-instances.scad 

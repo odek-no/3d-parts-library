@@ -11,8 +11,8 @@ extra_for_better_removal = 0.001;
 
 // TODO: Make own module for internal walls. Could be grid, or something.
 
-module box_rabbet(width, length, height, wall = 1.2, chamfer = 1.5, rounding = 0, anchor = CENTER, spin = 0,
-                  orient = UP)
+module box_rabbet(width, length, height, wall = 1.2, chamfer = 1.5, rounding = 0, friction_locks = true,
+                  anchor = CENTER, spin = 0, orient = UP)
 {
   empty_x = width - wall * 2;
   empty_y = length - wall * 2;
@@ -35,10 +35,13 @@ module box_rabbet(width, length, height, wall = 1.2, chamfer = 1.5, rounding = 0
         cuboid([ empty_x, empty_y, empty_z + extra_for_better_removal ], chamfer = chamfer, rounding = rounding,
                except = [TOP], anchor = TOP);
 
-      tag("remove") down(1) position(TOP)
+      if (friction_locks)
       {
-        xflip_copy(offset = rabbet_x / 2) ycyl(d = friction_lock_hole_d, h = friction_lock_hole_length, anchor = TOP);
-        yflip_copy(offset = rabbet_y / 2) xcyl(d = friction_lock_hole_d, h = friction_lock_hole_length, anchor = TOP);
+        tag("remove") down(1) position(TOP)
+        {
+          xflip_copy(offset = rabbet_x / 2) ycyl(d = friction_lock_hole_d, h = friction_lock_hole_length, anchor = TOP);
+          yflip_copy(offset = rabbet_y / 2) xcyl(d = friction_lock_hole_d, h = friction_lock_hole_length, anchor = TOP);
+        }
       }
     }
 
@@ -137,8 +140,8 @@ module box_sliding(width, length, height, wall = standard_wall, inner_walls = []
   }
 }
 
-module box_sliding_lid(width, length, wall = standard_wall, extra_friction_stops = [], anchor = CENTER, spin = 0,
-                       orient = UP)
+module box_sliding_lid(width, length, wall = standard_wall, extra_friction_stops = [], use_friction_lock = false,
+                       use_simple_lock = false, anchor = CENTER, spin = 0, orient = UP)
 {
   empty_x = width - wall * 2;
   empty_y = length - wall * 2;
@@ -148,19 +151,18 @@ module box_sliding_lid(width, length, wall = standard_wall, extra_friction_stops
   lid_y = empty_y + lid_lip + wall - lid_shorter_y;
   lid_z = wall - get_slop();
 
-  use_friction_lock = false;
-
   echo("lid", lid_x, lid_y, lid_z);
 
+  has_friction_stops = use_friction_lock || len(extra_friction_stops) > 0 ? true : false;
   lid_friction_stop_x = 8;
   lid_friction_stop_y = 1.4;
   lid_friction_stop_z = 0.6;
   lid_friction_offset_y = 0.1;
-  size = [ width, length, lid_z + lid_friction_stop_z ];
-
+  extra_z_because_of_friction_stops = has_friction_stops ? lid_friction_stop_z : 0;
+  size = [ lid_x, lid_y, lid_z + extra_z_because_of_friction_stops ];
   attachable(anchor = anchor, spin = spin, orient = orient, size = size)
   {
-    tag_scope() up(size[2] / 2) down(lid_friction_stop_z) xrot(180) diff()
+    tag_scope() up(size[2] / 2) down(extra_z_because_of_friction_stops) xrot(180) diff()
       cuboid([ lid_x, lid_y, lid_z ], chamfer = wall / 2, edges = [TOP], anchor = BOT)
     {
       if (use_friction_lock)
@@ -177,7 +179,7 @@ module box_sliding_lid(width, length, wall = standard_wall, extra_friction_stops
                  edges = [BOT + BACK + FWD], anchor = TOP + FWD);
       }
 
-      if (!use_friction_lock)
+      if (use_simple_lock)
       {
         position(BOT + FWD) back(wall - lid_shorter_y)
         {
