@@ -1,4 +1,5 @@
 // clang-format off
+include<BOSL2\screws.scad>;
 include<box.scad>;
 include<el-parts.scad>;
 include<jst.scad>;
@@ -7,7 +8,7 @@ include<misc.scad>;
 // clang-format on
 $slop = 0.08;
 
-part = "toggle_button_grid";
+part = "screw_test";
 
 if (part == "box")
 {
@@ -226,5 +227,21 @@ else if (part == "push_card_test_2x2_card_2")
         zcyl(d = punch_d, h = punch_h, anchor = BOT);
       }
     }
+  }
+}
+else if (part == "screw_test")
+{
+  // Screw head hole with reinforcement
+  diff() cuboid([ 20, 20, 1.2 ], anchor = BOT)
+  {
+    position(TOP) zcyl(d = 10, h = 2, anchor = BOT);
+#position(BOT) screw_hole("#6-32", head = "flat", length = 5, anchor = TOP, orient = DOWN);
+  }
+
+  left(30)
+    // Screw hole
+    diff() cuboid([ 15, 15, 10 ], anchor = BOT)
+  {
+#position(TOP) screw_hole("#4-32", length = 6, anchor = TOP);
   }
 }
