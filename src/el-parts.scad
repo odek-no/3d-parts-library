@@ -310,8 +310,8 @@ module plug_four_digit_display_seeed_studio() { plug_single(d = 2.0, h = 5); }
 module small_on_off_switch(anchor = CENTER, spin = 0, orient = UP)
 {
   // TODO: Make this typical on the back of the box
-  body_x = 8.3;
-  body_y = 14.4;
+  body_x = 8.5;
+  body_y = 14.5;
 
   switch_x = body_x + 1.2 * 2;
   switch_y = body_y + 1.2 * 2;
@@ -553,6 +553,47 @@ module toggle_button_grid_hole(wall, n = [ 2, 2 ], spacing = [ 15, 15 ], use_min
     attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
   {
     cuboid([ total_x, total_y, total_z ]);
+    children();
+  }
+}
+
+module servo_motor_tg9z(wall, anchor = CENTER, spin = 0, orient = UP)
+{
+  side_wall = 1.2;
+
+  widthPothole = 73.6 + side_wall * 2;
+  depthPothole = 12.6 + side_wall * 2;
+  heightPothole = 4;
+
+  widthKnobHole = 54;
+  depthKnobHole = 2;
+  heightKnobHole = 14;
+
+  connector_fastener_thickness = 3;
+
+  total_x = widthPothole;
+
+  total_y = depthPothole - side_wall * 2 + connector_fastener_thickness * 2;
+  total_z = wall;
+
+  attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
+  {
+    tag_diff("keep", keep = "keep_always") cuboid([ total_x, total_y, wall ])
+    {
+      // Hole for knob
+      tag("remove") cuboid([ widthKnobHole, depthKnobHole, wall + extra_for_better_removal ]);
+
+      // Fit the potentiometer
+      position(TOP) up(extra_for_better_removal) cuboid([ widthPothole, depthPothole, heightPothole ], anchor = BOT)
+      {
+        tag("remove") cuboid(
+          [ widthPothole - side_wall * 2, depthPothole - side_wall * 2, heightPothole + extra_for_better_removal ]);
+      }
+
+      // Fasteners
+      xcopies(n = 2, spacing = 40) position(TOP)
+        fastener_pair(depthPothole - side_wall * 2, 11, anchor = BOT, spin = 90);
+    }
     children();
   }
 }
