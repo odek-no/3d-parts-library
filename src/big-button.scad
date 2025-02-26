@@ -19,7 +19,7 @@ big_button_pitch = 4;
 function calculate_base_d(cap_d, cap_wall) = let(margin_button_and_base = 2) cap_d
                                              - cap_wall * 2 - margin_button_and_base;
 
-function calcualate_button_spacing(cap_d, cap_wall, base_wall, chamfer, rounding) =
+function calculate_button_spacing(cap_d, cap_wall, base_wall, chamfer, rounding) =
   let(base_d = calculate_base_d(cap_d, cap_wall), inner_base_d = base_d - base_wall * 2, button_size = 12.06,
       button_grid_extra_spacing_for_fasteners_etc = 4, square_length = inner_base_d * sqrt(2) / 2) square_length
   - button_size - button_grid_extra_spacing_for_fasteners_etc - (chamfer ? chamfer * 1.4 : rounding * 1.4);
@@ -31,7 +31,7 @@ module big_button_cap(d = 90, height = 20, wall = 1.2, base_wall = 2, chamfer = 
   tactile_button_d = 7.0;
   tactile_button_wall = 3;
 
-  button_spacing = calcualate_button_spacing(d, wall, base_wall, chamfer, rounding);
+  button_spacing = calculate_button_spacing(d, wall, base_wall, chamfer, rounding);
   tactile_button_row_count = button_spacing > 18 ? 2 : 1;
   echo("button_spacing", button_spacing);
 
@@ -71,7 +71,7 @@ module big_button_base(cap_d = 90, height = 20, wall = 2, cap_wall = 1.2, chamfe
 
   echo("base_d and rod_d", base_d, rod_d);
 
-  button_spacing = calcualate_button_spacing(cap_d, cap_wall, wall, chamfer, rounding);
+  button_spacing = calculate_button_spacing(cap_d, cap_wall, wall, chamfer, rounding);
   tactile_button_row_count = button_spacing > 18 ? 2 : 1;
   echo("button_spacing", button_spacing);
 
