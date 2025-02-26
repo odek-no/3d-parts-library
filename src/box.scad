@@ -1,5 +1,6 @@
 // clang-format off
 include<BOSL2\std.scad>;
+include<BOSL2\threading.scad>;
 // clang-format on
 
 $fn = $preview ? 32 : 200;
@@ -10,6 +11,117 @@ standard_inner_wall = 1.2;
 extra_for_better_removal = 0.001;
 
 // TODO: Make own module for internal walls. Could be grid, or something.
+
+module box_cylinder(d, height, wall = 1.2, use_small_d_for_lid = false, holes = [], anchor = CENTER, spin = 0,
+                    orient = UP, $slop = 0.3)
+{
+  rod_margin = use_small_d_for_lid ? 0 : 2;
+  rod_margin_bottom = use_small_d_for_lid ? 1 : 0;
+  threaded_l = 6 - wall;
+  threaded_pitch = 3;
+  // The $slop is "eaten" away when lid is same d as box, so need to compensate by removing from outer thread instead.
+  threaded_d_min = use_small_d_for_lid ? d - wall * 2 - threaded_pitch - get_slop() * 4 : d;
+  threaded_d_max = threaded_d_min + threaded_pitch;
+  // This seems to work fine for pitch less than 5 at least. Not accurate when pitch is 10.
+  threaded_d_pitch = threaded_d_min + threaded_pitch / 2 - 0.5;
+
+  rod_rest_h = use_small_d_for_lid ? 3 : 0;
+
+  empty_d = d - wall * 2;
+  empty_height = use_small_d_for_lid ? height - wall - rod_rest_h : height - wall;
+
+  empty_d_upper = threaded_d_min - wall * 2;
+  empty_height_upper = threaded_l;
+
+  rod_anchor = use_small_d_for_lid ? BOT : TOP;
+
+  holes_extra_margin = use_small_d_for_lid ? 0 : rod_margin + threaded_l;
+
+  attachable(anchor = anchor, spin = spin, orient = orient, d = d, l = height)
+  {
+    tag_scope() diff() zcyl(d = d, height = height, anchor = BOT)
+    {
+      tag("remove") up(wall + extra_for_better_removal) position(BOT)
+        zcyl(d = empty_d, height = empty_height + extra_for_better_removal, anchor = BOT);
+
+      if (use_small_d_for_lid)
+      {
+        // Remove inside of tube to rest rod on
+        tag("remove") down(rod_rest_h - extra_for_better_removal / 2) position(TOP) zcyl(
+          h = rod_rest_h + extra_for_better_removal, d1 = d - wall * 2, d2 = threaded_d_min - wall * 2, anchor = BOT);
+      }
+
+      position(TOP) down(rod_margin) up(rod_margin_bottom)
+        threaded_rod(d = [ threaded_d_min, threaded_d_pitch, threaded_d_max ], l = threaded_l, pitch = threaded_pitch,
+                     anchor = rod_anchor, internal = false)
+
+      {
+        if (use_small_d_for_lid)
+        {
+          // Hole in rod
+          tag("remove") up(extra_for_better_removal) position(TOP)
+            zcyl(d = empty_d_upper, height = empty_height_upper + rod_margin_bottom + extra_for_better_removal,
+                 anchor = TOP);
+
+          // Tube to handle margin bottom
+          tag("keep") position(BOT)
+            tube(h = rod_margin_bottom, od = threaded_d_min, id = threaded_d_min - wall * 2, anchor = TOP);
+        }
+      }
+
+      if (use_small_d_for_lid)
+      {
+        // Tube to rest rod on
+        tag("keep") down(rod_rest_h) position(TOP)
+          tube(h = rod_rest_h, od1 = d, id1 = d - wall * 2, od2 = threaded_d_min, id2 = threaded_d_min - wall * 2,
+               anchor = BOT);
+      }
+
+      if (len(holes) == 2)
+      {
+        hole_h = 8;
+        hole_margin = 2;
+
+        //
+        // holes_needed =  (height - wall - rod_rest_h - holes_extra_margin)/(hole_h+hole_margin);
+        holes_needed = floor((height - wall - 0 - holes_extra_margin + hole_margin) / (hole_h + hole_margin));
+
+        position(BOT) up(wall) rot_copies(n = holes[0]) tag("remove")
+          zcopies(spacing = hole_h + hole_margin, n = holes_needed, sp = [ 0, 0, 0 ])
+            cuboid([ d + extra_for_better_removal, holes[1], hole_h ], anchor = BOT);
+      }
+    }
+
+    children();
+  }
+}
+
+module box_cylinder_lid(d, wall = 1.2, use_small_d_for_lid = false, anchor = CENTER, spin = 0, orient = UP, $slop = 0.3)
+{
+  height = 10;
+  // Seems like the slop is 4 times for internal threaded_rod.
+  wall_including_slop = wall * 2 + get_slop() * 4;
+  threaded_l = height - wall;
+  threaded_pitch = 3;
+  threaded_d_min = use_small_d_for_lid ? d - wall_including_slop - threaded_pitch : d;
+  threaded_d_max = threaded_d_min + threaded_pitch;
+  // This seems to work fine for pitch less than 5 at least. Not accurate when pitch is 10.
+  threaded_d_pitch = threaded_d_min + threaded_pitch / 2 - 0.5;
+
+  lid_d = use_small_d_for_lid ? d : threaded_d_max + wall_including_slop;
+
+  attachable(anchor = anchor, spin = spin, orient = orient, d = lid_d, l = height)
+  {
+    tag_scope() diff() zcyl(d = lid_d, height = height, anchor = BOT)
+    {
+      tag("remove") position(TOP) up(extra_for_better_removal)
+        threaded_rod(d = [ threaded_d_min, threaded_d_pitch, threaded_d_max ],
+                     l = threaded_l + extra_for_better_removal, pitch = threaded_pitch, anchor = TOP, internal = true);
+    }
+
+    children();
+  }
+}
 
 module box_rabbet(width, length, height, wall = 1.2, chamfer = 1.5, rounding = 0, friction_locks = true,
                   anchor = CENTER, spin = 0, orient = UP)
@@ -50,15 +162,16 @@ module box_rabbet(width, length, height, wall = 1.2, chamfer = 1.5, rounding = 0
 }
 
 module box_rabbet_lid(width, length, height = 10, wall = 1.2, rabbet_wall = 0.8, chamfer = 1.5, rounding = 0,
-                      anchor = CENTER, spin = 0, orient = UP)
+                      rabbet_z = 5, anchor = CENTER, spin = 0, orient = UP)
 {
   rabbet_x = width - wall * 2 - get_slop() * 2;
   rabbet_y = length - wall * 2 - get_slop() * 2;
-  rabbet_z = 5;
 
   empty_x = width - wall * 2 - rabbet_wall * 2;
   empty_y = length - wall * 2 - rabbet_wall * 2;
   empty_z = height - wall;
+
+  echo("box_rabbet_lid empty_x and empty_y", empty_x, empty_y);
 
   total_height = height + rabbet_z;
 
@@ -276,4 +389,9 @@ module box_simple_lock_hole(wall = standard_wall, anchor = CENTER, spin = 0, ori
     cuboid([ total_x, total_y, total_z ]);
     children();
   }
+}
+
+module box_shape(width, length, height, shape, wall = standard_wall, chamfer = 0, rounding = 2, anchor = CENTER,
+                 spin = 0, orient = UP)
+{
 }
