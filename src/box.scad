@@ -5,9 +5,10 @@ include<BOSL2\threading.scad>;
 
 $fn = $preview ? 32 : 200;
 
+BOX_STANDARD_INNER_WALL = 1.2;
+
 standard_wall = 2.4;
 standard_lid_lip = 1;
-standard_inner_wall = 1.2;
 extra_for_better_removal = 0.001;
 
 // TODO: Make own module for internal walls. Could be grid, or something.
@@ -96,9 +97,9 @@ module box_cylinder(d, height, wall = 1.2, use_small_d_for_lid = false, holes = 
   }
 }
 
-module box_cylinder_lid(d, wall = 1.2, use_small_d_for_lid = false, anchor = CENTER, spin = 0, orient = UP, $slop = 0.3)
+module box_cylinder_lid(d, height = 10, wall = 1.2, use_small_d_for_lid = false, anchor = CENTER, spin = 0, orient = UP,
+                        $slop = 0.3)
 {
-  height = 10;
   // Seems like the slop is 4 times for internal threaded_rod.
   wall_including_slop = wall * 2 + get_slop() * 4;
   threaded_l = height - wall;
@@ -207,7 +208,7 @@ module box_rabbet_lid(width, length, height = 10, wall = 1.2, rabbet_wall = 0.8,
   }
 }
 
-module box_sliding(width, length, height, wall = standard_wall, inner_walls = [], inner_wall = standard_inner_wall,
+module box_sliding(width, length, height, wall = standard_wall, inner_walls = [], inner_wall = BOX_STANDARD_INNER_WALL,
                    chamfer = 0, rounding = 2, anchor = CENTER, spin = 0, orient = UP)
 {
   empty_x = width - wall * 2;
@@ -254,7 +255,7 @@ module box_sliding(width, length, height, wall = standard_wall, inner_walls = []
 }
 
 module box_sliding_lid(width, length, wall = standard_wall, extra_friction_stops = [], use_friction_lock = false,
-                       use_simple_lock = false, anchor = CENTER, spin = 0, orient = UP)
+                       use_simple_lock = false, large_simple_lock = false, anchor = CENTER, spin = 0, orient = UP)
 {
   empty_x = width - wall * 2;
   empty_y = length - wall * 2;
@@ -296,9 +297,10 @@ module box_sliding_lid(width, length, wall = standard_wall, extra_friction_stops
       {
         position(BOT + FWD) back(wall - lid_shorter_y)
         {
-          tag("remove") box_simple_lock_hole(wall, anchor = BOT + FWD);
+          simple_lock_width = large_simple_lock ? 9 : 6;
+          tag("remove") box_simple_lock_hole(width = simple_lock_width, wall = wall, anchor = BOT + FWD);
 
-          tag("keep") box_simple_lock(wall, anchor = BOT + FWD);
+          tag("keep") box_simple_lock(width = simple_lock_width, wall = wall, anchor = BOT + FWD);
         }
       }
     }
@@ -306,9 +308,10 @@ module box_sliding_lid(width, length, wall = standard_wall, extra_friction_stops
   }
 }
 
-module box_simple_lock_fastener()
+module box_simple_lock_fastener(large_simple_lock = false, $slop = 0.1)
 {
-  spring_z = 6 - get_slop();
+  simple_lock_width = large_simple_lock ? 9 : 6;
+  spring_z = simple_lock_width - get_slop();
   spring_h = 9;
   spring_w = 8.3;
   spring_wall = 0.9;
@@ -331,16 +334,16 @@ module box_simple_lock_fastener()
   }
 }
 
-module box_simple_lock(wall = standard_wall, anchor = CENTER, spin = 0, orient = UP)
+module box_simple_lock(width = 6, wall = standard_wall, anchor = CENTER, spin = 0, orient = UP)
 {
-  spring_z = 6;
+  spring_z = width;
   stopper_length = 12;
   stopper_thickness = 0.8;
   grove = stopper_thickness + 0.3;
   grove_inside = stopper_thickness;
   extra_space_for_screw_driver = 0.8;
 
-  total_x = stopper_length + extra_space_for_screw_driver * 2 ++extra_for_better_removal;
+  total_x = stopper_length + extra_space_for_screw_driver * 2 + extra_for_better_removal;
   total_y = spring_z + extra_for_better_removal;
   total_z = wall;
 
@@ -371,10 +374,10 @@ module box_simple_lock(wall = standard_wall, anchor = CENTER, spin = 0, orient =
   }
 }
 
-module box_simple_lock_hole(wall = standard_wall, anchor = CENTER, spin = 0, orient = UP)
+module box_simple_lock_hole(width = 6, wall = standard_wall, anchor = CENTER, spin = 0, orient = UP)
 {
   // Warning: Numbers repeated
-  spring_z = 6;
+  spring_z = width;
   stopper_length = 12;
   extra_space_for_screw_driver = 0.8;
 

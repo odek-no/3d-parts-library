@@ -7,5 +7,6 @@
       "command": "clang-format",
       "languages": ["scad"]
     }
-  ]
+  ],
+  "cSpell.words": ["microbit"]
 }

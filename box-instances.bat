@@ -39,9 +39,13 @@
 @REM openscad -D "d=60;height=90;wall=1.2;use_small_d_for_lid=true;holes=[16,4];part=\"box_cylinder\"" -o stl/tests/box_cylinder_d60xh90w1_2_small_lid.stl src/box-instances.scad
 @REM openscad -D "d=60;wall=1.2;use_small_d_for_lid=true;part=\"box_cylinder_lid\"" -o stl/tests/box_cylinder_lid_d60w1_2_small_lid.stl src/box-instances.scad
 
+@REM openscad -D "width=175;length=175;height=2;lid_rabbet_z=8;part=\"box_rabbet_lid\"" -o "../../prosjekter/2025 Hnefatafl/box_lid.stl" src/box-instances.scad
+@REM openscad -D "width=175;length=175;height=30;friction_locks=true;part=\"box_rabbet\"" -o "../../prosjekter/2025 Hnefatafl/box.stl" src/box-instances.scad
+
+@REM openscad -D "width=55;length=55;height=75;friction_locks=true;part=\"box_rabbet\"" -o "../../prosjekter/2025 ice/box.stl" src/box-instances.scad
+@REM openscad -D "width=55;length=55;height=5;friction_locks=true;part=\"box_rabbet_lid\"" -o "../../prosjekter/2025 ice/box_lid.stl" src/box-instances.scad
+
+
+@REM Beads/perler (moved to own project (beads)
 @REM openscad -D "d=50;height=90;wall=1.2;use_small_d_for_lid=true;holes=[16,4];part=\"box_cylinder\"" -o stl/tests/box_cylinder_d50xh90w1_2_small_lid.stl src/box-instances.scad
 @REM openscad -D "d=50;wall=1.2;use_small_d_for_lid=true;part=\"box_cylinder_lid\"" -o stl/tests/box_cylinder_lid_d50w1_2_small_lid.stl src/box-instances.scad
-
-
-@REM openscad -D "width=175;length=175;height=2;lid_rabbet_z=8;part=\"box_rabbet_lid\"" -o "../../prosjekter/2025 Hnefatafl/box_lid.stl" src/box-instances.scad
-openscad -D "width=175;length=175;height=30;friction_locks=true;part=\"box_rabbet\"" -o "../../prosjekter/2025 Hnefatafl/box.stl" src/box-instances.scad

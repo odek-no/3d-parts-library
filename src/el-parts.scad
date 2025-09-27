@@ -2,360 +2,11 @@
 include<BOSL2\std.scad>;
 // clang-format on
 
+ELPARTS_BATTERY_3AA_Y = 48.5;
+
 $fn = $preview ? 64 : 200;
 
 extra_for_better_removal = 0.001;
-
-module button_grid(n = [ 2, 2 ], spacing = [ 25, 25 ], use_minimal_spacing = false, markings = [], wall = 2,
-                   extra_wall = 1, show_fasteners_x = false, show_fasteners_y = true, buttons_to_ignore = [],
-                   anchor = CENTER, spin = 0, orient = UP)
-{
-  grid_margin_to_edge = 1;
-
-  button_hole_width = 12.06;
-  button_hole_length = 12.06;
-  button_hole_height = 3.9;
-  button_inner_d = 8.4;
-
-  button_fastener_isize_x = 4.9;
-  button_fastener_isize_z = 2.25;
-  button_fastener_wall = 3;
-  button_fastener_wall_top = 2;
-  button_fastener_thickness = 3;
-  button_fastener_height_above_box = 2.6;
-
-  button_fastener_width = button_fastener_wall * 2 + button_fastener_isize_x;
-  button_fastener_height = button_fastener_wall_top + button_fastener_isize_z + button_fastener_height_above_box;
-
-  minimal_spacing = 18; // button_hole_width + button_fastener_thickness * 2;
-  acutal_spacing = use_minimal_spacing ? [ minimal_spacing, minimal_spacing ] : spacing;
-
-  total_x = (n[0] - 1) * acutal_spacing[0] + button_hole_width +
-            (show_fasteners_x ? button_fastener_thickness * 2 : grid_margin_to_edge * 2);
-  total_y = (n[1] - 1) * acutal_spacing[1] + button_hole_length +
-            (show_fasteners_y ? button_fastener_thickness * 2 : grid_margin_to_edge * 2);
-
-  total_z = wall + extra_wall + button_fastener_height;
-
-  size = [ total_x, total_y, total_z ];
-
-  attachable(anchor = anchor, spin = spin, orient = orient, size = size)
-  {
-    down(total_z / 2) tag_diff("keep", keep = "keep_always")
-      cuboid([ total_x, total_y, wall + extra_wall ], anchor = BOT)
-    {
-      grid_copies(n = n, spacing = acutal_spacing)
-      {
-        if (!in_list($idx, buttons_to_ignore))
-        {
-
-          {
-            // Square hole for button body
-            tag("remove") up(extra_for_better_removal) position(TOP)
-              cuboid([ button_hole_width, button_hole_length, extra_wall + extra_for_better_removal ], anchor = TOP);
-            // Hole for button pole
-            tag("remove") down(extra_for_better_removal / 2) position(BOT)
-              cyl(d = button_inner_d, h = wall + extra_for_better_removal, anchor = BOT);
-          }
-
-          if (markings)
-          {
-            // TODO: Fix for other than two columns
-            let(offset = $idx % 2 == 0 ? -1 : 1) color("red") tag("keep_always") position(TOP) left(offset * 9)
-              text3d(markings[$idx], h = 0.2, size = 4, font = "Arial", orient = UP, anchor = BOT, center = true);
-          }
-          // Fasten holes for buttons
-          if (show_fasteners_x)
-          {
-            position(TOP) xcopies(n = 2, spacing = button_hole_width + button_fastener_thickness)
-              cuboid([ button_fastener_thickness, button_fastener_width, button_fastener_height ], anchor = BOT)
-            {
-              tag("remove") position(TOP) down(button_fastener_wall_top) cuboid(
-                [
-                  button_fastener_thickness + extra_for_better_removal, button_fastener_isize_x,
-                  button_fastener_isize_z
-                ],
-                anchor = TOP);
-            }
-          }
-          if (show_fasteners_y)
-          {
-            position(TOP) ycopies(n = 2, spacing = button_hole_width + button_fastener_thickness) cuboid(
-              [ button_fastener_thickness, button_fastener_width, button_fastener_height ], anchor = BOT, spin = 90)
-            {
-              tag("remove") position(TOP) down(button_fastener_wall_top) cuboid(
-                [
-                  button_fastener_thickness + extra_for_better_removal, button_fastener_isize_x,
-                  button_fastener_isize_z
-                ],
-                anchor = TOP);
-            }
-          }
-        }
-      }
-    }
-    children();
-  }
-}
-
-module button_grid_hole(wall, n = [ 2, 2 ], spacing = [ 25, 25 ], use_minimal_spacing = false, show_fasteners_x = false,
-                        show_fasteners_y = true, anchor = CENTER, spin = 0, orient = UP)
-{
-  // Warning: Numbers repeated from microbit_connector module
-  grid_margin_to_edge = 1;
-  button_hole_width = 12.06;
-  button_hole_length = 12.06;
-  button_fastener_thickness = 3;
-
-  minimal_spacing = 18; // button_hole_width + button_fastener_thickness * 2;
-  acutal_spacing = use_minimal_spacing ? [ minimal_spacing, minimal_spacing ] : spacing;
-
-  total_x = (n[0] - 1) * acutal_spacing[0] + button_hole_width +
-            (show_fasteners_x ? button_fastener_thickness * 2 : grid_margin_to_edge * 2);
-  total_y = (n[1] - 1) * acutal_spacing[1] + button_hole_length +
-            (show_fasteners_y ? button_fastener_thickness * 2 : grid_margin_to_edge * 2);
-
-  total_z = wall + extra_for_better_removal;
-
-  up_down = orient == UP ? 1 : -1;
-
-  // This only works if anchor is BOT where this is attatched
-  down(up_down * extra_for_better_removal / 2)
-    attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
-  {
-    cuboid([ total_x, total_y, total_z ]);
-    children();
-  }
-}
-
-module button_fastener_stick(n, spacing = 25, extra_length = 0)
-{
-  button_fastener_thickness = 3;
-  button_fastener_x = 4.7 - get_slop();
-  button_fastener_z = 2.0 - get_slop();
-  button_hole_size = 12.06;
-
-  button_fastener_y = (n - 1) * spacing + button_hole_size + button_fastener_thickness * 2 + extra_length;
-
-  cuboid([ button_fastener_x, button_fastener_y, button_fastener_z ], chamfer = button_fastener_z / 2, edges = [TOP],
-         except = [ BACK, LEFT, RIGHT ], anchor = BOT);
-}
-
-module button_fastener()
-{
-  button_fastener_thickness = 3;
-  button_fastener_x = 4.7 - get_slop();
-  button_fastener_z = 2.0 - get_slop();
-  button_hole_size = 12.06;
-
-  button_fastener_y = 5.5;
-  button_fastener_y_gap = 8;
-
-  spring_wall = 0.6;
-
-  yrot(90)
-  {
-    ycopies(n = 2, spacing = button_fastener_y + button_fastener_y_gap) zrot(180 * $idx)
-      cuboid([ button_fastener_x, button_fastener_y, button_fastener_z ], rounding = button_fastener_z / 4,
-             edges = [TOP], except = [ BACK, LEFT, RIGHT ], anchor = BOT)
-    {
-      back(0.4) position(TOP + BACK) cuboid([ button_fastener_x, 2.6, 1.1 ], anchor = BOT + BACK);
-    }
-
-    diff() left(button_fastener_x / 2) pie_slice(ang = 180, l = button_fastener_x,
-                                                 d = button_fastener_y_gap + spring_wall * 2, orient = RIGHT, spin = 90)
-      tag("remove") down(button_fastener_x / 2 + extra_for_better_removal / 2)
-        pie_slice(ang = 180, l = button_fastener_x + extra_for_better_removal, d = button_fastener_y_gap);
-  }
-}
-
-module button_fastener_long(gap)
-{
-  button_fastener_thickness = 3;
-  button_fastener_x = 4.7 - get_slop();
-  button_fastener_z = 2.0 - get_slop();
-  button_hole_size = 12.06;
-
-  overlap = 2.6;
-
-  button_fastener_y = 5.5;
-  button_fastener_y_gap = gap;
-
-  spring_wall = 0.6;
-
-  yrot(90)
-  {
-    ycopies(n = 2, spacing = button_fastener_y + button_fastener_y_gap - overlap * 2) zrot(180 * $idx)
-      cuboid([ button_fastener_x, button_fastener_y, button_fastener_z ], rounding = button_fastener_z / 4,
-             edges = [TOP], except = [ BACK, LEFT, RIGHT ], anchor = BOT);
-    up(button_fastener_z) cuboid([ button_fastener_x, button_fastener_y_gap, 1.1 ], anchor = BOT);
-  }
-}
-
-module button_cap(form_svg = "standard_button_cap.svg", size = [ 15, 15 ], offset = [ 0, 0 ], anchor = CENTER, spin = 0,
-                  orient = UP)
-{
-  wall = 2;
-  cap_height = 4;
-  cap_fastener_height = 3;
-  cap_fastener_d = 7;
-
-  button_pole_top_size = 3.8;
-  button_pole_top_height = 3.0;
-  button_pole_bottom_size = 1.8;
-  button_pole_bottom_height = 0.8;
-  button_pole_height_space = cap_height + cap_fastener_height - wall;
-  // We need the space for the button cap to be a bit higher than the button pole
-  assert(button_pole_height_space > 3.1);
-
-  button_index = part == "a" ? 0 : part == "b" ? 1 : part == "c" ? 2 : part == "d" ? 3 : 0;
-  cap_pole_extra_margin = 0.11;
-
-  offset_x = offset[0];
-  offset_y = offset[1];
-
-  rounding = 1;
-
-  width_wo_rounding = size[0] - rounding * 2;
-  height_wo_rounding = size[1] - rounding * 2;
-
-  total_height = cap_height + cap_fastener_height;
-
-  attachable(anchor = anchor, spin = spin, orient = orient, size = [ size[0], size[1], total_height ])
-  {
-    down(total_height / 2) difference()
-    {
-      union()
-      {
-        minkowski()
-        {
-          resize([ width_wo_rounding, height_wo_rounding, 0 ]) linear_extrude(height = cap_height - rounding * 2)
-            import(file = form_svg, center = true);
-          up(rounding) sphere(r = rounding);
-        }
-
-        up(cap_height) right(offset_x) back(offset_y) zcyl(h = cap_fastener_height, d = cap_fastener_d, anchor = BOT);
-      }
-      up(cap_height + cap_fastener_height + extra_for_better_removal) right(offset_x) back(offset_y) cuboid(
-        [
-          button_pole_top_size + cap_pole_extra_margin, button_pole_top_size + cap_pole_extra_margin,
-          button_pole_height_space +
-          extra_for_better_removal
-        ],
-        anchor = TOP);
-    }
-    children();
-  }
-}
-
-module four_digit_display_seeed_studio(anchor = CENTER, spin = 0, orient = UP)
-{
-  chip_x = 42.3;
-  chip_y = 24.2;
-  display_x = 30.4;
-  display_y = 14.4;
-  display_z = 7;
-
-  display_offset_x = 3;
-
-  total_x = chip_x;
-  total_y = chip_y;
-  total_z = display_z;
-
-  attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
-  {
-    // We want the center of the display to be the center
-    left(display_offset_x) tag_diff("keep", keep = "keep_always") cuboid([ total_x, total_y, total_z ])
-    {
-      tag("remove") position(RIGHT) left(display_offset_x)
-        cuboid([ display_x, display_y, display_z + extra_for_better_removal ], anchor = RIGHT);
-
-      up(extra_for_better_removal)
-      {
-        tag("remove") position(TOP + RIGHT) ycopies(n = 2, spacing = 20) left(9.2)
-          zcyl(d = 2.3, h = 5 + extra_for_better_removal, anchor = TOP + RIGHT);
-        tag("remove") position(TOP + LEFT) right(0.9)
-          zcyl(d = 2.3, h = 5 + extra_for_better_removal, anchor = TOP + LEFT);
-      }
-    }
-    children();
-  }
-}
-
-module four_digit_display_seeed_studio_hole(wall, anchor = CENTER, spin = 0, orient = UP)
-{
-  // Warning: Numbers repeated
-  chip_x = 42.3;
-  chip_y = 24.2;
-
-  total_x = chip_x;
-  total_y = chip_y;
-  total_z = wall + extra_for_better_removal;
-
-  display_offset_x = 3;
-
-  // This only works if anchor is BOT where this is attatched
-  up_down = orient == UP ? 1 : -1;
-  // We want the center of the display to be the center
-  left(display_offset_x) down(up_down * extra_for_better_removal / 2)
-    attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
-  {
-    cuboid([ total_x, total_y, total_z ]);
-    children();
-  }
-}
-
-module plug_four_digit_display_seeed_studio() { plug_single(d = 2.0, h = 5); }
-
-module small_on_off_switch(anchor = CENTER, spin = 0, orient = UP)
-{
-  // TODO: Make this typical on the back of the box
-  body_x = 8.5;
-  body_y = 14.5;
-
-  switch_x = body_x + 1.2 * 2;
-  switch_y = body_y + 1.2 * 2;
-
-  wall = 2;
-
-  display_offset_x = 2.9;
-
-  total_x = switch_x;
-  total_y = switch_y;
-  total_z = wall;
-
-  attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
-  {
-    tag_diff("keep", keep = "keep_always") cuboid([ total_x, total_y, total_z ])
-    {
-      tag("remove") cuboid([ body_x, body_y, wall + extra_for_better_removal ]);
-    }
-    children();
-  }
-}
-
-module small_on_off_switch_hole(wall, anchor = CENTER, spin = 0, orient = UP)
-{
-  // Warning: Numbers repeated
-  body_x = 8.3;
-  body_y = 14.4;
-
-  switch_x = body_x + 1.2 * 2;
-  switch_y = body_y + 1.2 * 2;
-
-  total_x = switch_x;
-  total_y = switch_y;
-  total_z = wall + extra_for_better_removal;
-
-  // This only works if anchor is BOT where this is attatched
-  up_down = orient == UP ? 1 : -1;
-  down(up_down * extra_for_better_removal / 2)
-    attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
-  {
-    cuboid([ total_x, total_y, total_z ]);
-    children();
-  }
-}
 
 module plug_single(d, h)
 {
@@ -486,77 +137,6 @@ module fastener_pair(distance, height_above_bottom, anchor = CENTER, spin = 0, o
   }
 }
 
-module toggle_button_grid(n = [ 2, 2 ], spacing = [ 15, 15 ], use_minimal_spacing = false, anchor = CENTER, spin = 0,
-                          orient = UP)
-{
-  wall = 6;
-  extra_wall = 1;
-  grid_margin_to_edge = 1;
-
-  button_hole_width = 8.05;
-  button_hole_length = 13.1;
-  button_hole_height = 6;
-  button_inner_d = 6.4;
-
-  // Can't be to narrow because of the nut
-  minimal_spacing = [ 11 + grid_margin_to_edge, 13 + grid_margin_to_edge ];
-  acutal_spacing = use_minimal_spacing ? minimal_spacing : spacing;
-
-  total_x = (n[0] - 1) * acutal_spacing[0] + button_hole_width + grid_margin_to_edge * 2;
-  total_y = (n[1] - 1) * acutal_spacing[1] + button_hole_length + grid_margin_to_edge * 2;
-
-  total_z = wall + extra_wall;
-
-  size = [ total_x, total_y, total_z ];
-
-  attachable(anchor = anchor, spin = spin, orient = orient, size = size)
-  {
-    down(total_z / 2) tag_diff("keep", keep = "keep_always")
-      cuboid([ total_x, total_y, wall + extra_wall ], anchor = BOT)
-    {
-      grid_copies(n = n, spacing = acutal_spacing)
-      {
-        // Square hole for button body
-        tag("remove") up(extra_for_better_removal) position(TOP)
-          cuboid([ button_hole_width, button_hole_length, extra_wall + extra_for_better_removal ], anchor = TOP);
-        // Hole for button pole
-        tag("remove") down(extra_for_better_removal / 2) position(BOT)
-          cyl(d = button_inner_d, h = wall + extra_for_better_removal, anchor = BOT);
-      }
-    }
-    children();
-  }
-}
-
-module toggle_button_grid_hole(wall, n = [ 2, 2 ], spacing = [ 15, 15 ], use_minimal_spacing = false, anchor = CENTER,
-                               spin = 0, orient = UP)
-{
-  // Warning: Numbers repeated
-  grid_margin_to_edge = 1;
-
-  button_hole_width = 8.05;
-  button_hole_length = 13.1;
-  button_hole_height = 6;
-
-  minimal_spacing = [ button_hole_width + grid_margin_to_edge, button_hole_length + grid_margin_to_edge ];
-  acutal_spacing = use_minimal_spacing ? minimal_spacing : spacing;
-
-  total_x = (n[0] - 1) * acutal_spacing[0] + button_hole_width + grid_margin_to_edge * 2;
-  total_y = (n[1] - 1) * acutal_spacing[1] + button_hole_length + grid_margin_to_edge * 2;
-
-  total_z = wall + extra_for_better_removal;
-
-  up_down = orient == UP ? 1 : -1;
-
-  // This only works if anchor is BOT where this is attatched
-  down(up_down * extra_for_better_removal / 2)
-    attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
-  {
-    cuboid([ total_x, total_y, total_z ]);
-    children();
-  }
-}
-
 module servo_motor_tg9z(wall, anchor = CENTER, spin = 0, orient = UP)
 {
   side_wall = 1.2;
@@ -594,6 +174,229 @@ module servo_motor_tg9z(wall, anchor = CENTER, spin = 0, orient = UP)
       xcopies(n = 2, spacing = 40) position(TOP)
         fastener_pair(depthPothole - side_wall * 2, 11, anchor = BOT, spin = 90);
     }
+    children();
+  }
+}
+
+module sonar_hcsr04(anchor = CENTER, spin = 0, orient = UP)
+{
+  connector_fastener_length = 10.9;
+  connector_fastener_thickness = 3;
+  connector_fastener_height = 4.25;
+
+  chip_x = 45.5;
+  chip_y_including_pins = 26.6;
+  chip_y = 20.5;
+  chip_z = 7;
+  chip_blue_thickness = 1.65;
+
+  mic_d = 16.2;
+  mic_spacing = 42.8 - mic_d;
+  mic_offset_y = 2;
+
+  holes_d = 1.8;
+  holes_offset_xy = 0.5;
+
+  wall = 1.2;
+
+  fastener_offset_y = (chip_y_including_pins - chip_y) / 2 - connector_fastener_thickness / 2;
+
+  // pins
+  tallest_component_z = 1.4;
+
+  total_x = chip_x;
+  total_y = chip_y_including_pins + connector_fastener_thickness;
+  total_z = wall + tallest_component_z;
+
+  mic_offset_because_of_pins = (total_y) / 2 - connector_fastener_thickness - mic_offset_y - mic_d / 2;
+  echo("mic_offset_because_of_pins", mic_offset_because_of_pins);
+
+  attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
+  {
+    tag_diff("keep", keep = "keep_always") cuboid([ total_x, total_y, total_z ])
+    {
+      // Holes for mics
+      tag("remove") position(BOT + BACK) down(extra_for_better_removal / 2)
+        fwd(mic_offset_y + connector_fastener_thickness) xcopies(n = 2, spacing = mic_spacing)
+          zcyl(d = mic_d, h = total_z + extra_for_better_removal, anchor = BOT + BACK);
+
+      // Holes for fasteners
+      // tag("remove") position(TOP + BACK) up(extra_for_better_removal)
+      //   fwd(holes_offset_xy + (chip_y - holes_d - holes_offset_xy * 2) / 2 + connector_fastener_thickness)
+      //   grid_copies(
+      //     n = [ 2, 2 ], spacing = [ chip_x - holes_d - holes_offset_xy * 2, chip_y - holes_d - holes_offset_xy * 2 ])
+      //     zcyl(d = holes_d, h = total_z - wall + extra_for_better_removal, anchor = TOP + BACK);
+
+      // Holes for components (this is fore the old 5v with Oscillator )
+      // tag("remove") position(TOP + BACK) up(extra_for_better_removal) back(extra_for_better_removal)
+      //   cuboid([ 11.2, 5.8 + extra_for_better_removal, tallest_component_z + extra_for_better_removal ], rounding =
+      //   2,
+      //          except = [ TOP, BOT, BACK ], anchor = TOP + BACK);
+
+      tag("remove") position(TOP + FWD) up(extra_for_better_removal) fwd(extra_for_better_removal)
+        cuboid([ 11, 10 + extra_for_better_removal, tallest_component_z + extra_for_better_removal ], rounding = 2,
+               except = [ TOP, BOT, FWD ], anchor = TOP + FWD);
+
+      // Fasteners
+      back(fastener_offset_y) xcopies(n = 2, spacing = chip_x - connector_fastener_length) position(TOP)
+        fastener_pair(distance = chip_y, height_above_bottom = chip_blue_thickness, anchor = BOT, spin = 90);
+    }
+
+    // Not sure if this needs to be moved as well
+    children();
+  }
+}
+
+module sonar_hcsr04_hole(wall, anchor = CENTER, spin = 0, orient = UP)
+{
+  // Warning: Numbers repeated
+  connector_fastener_thickness = 3;
+  chip_x = 45.5;
+  chip_y_including_pins = 26.6;
+
+  total_x = chip_x;
+  total_y = chip_y_including_pins + connector_fastener_thickness;
+  total_z = wall + extra_for_better_removal;
+
+  // This only works if anchor is BOT where this is attatched
+  up_down = orient == UP ? 1 : -1;
+
+  down(up_down * extra_for_better_removal / 2)
+    attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
+  {
+    cuboid([ total_x, total_y, total_z ]);
+    children();
+  }
+}
+
+module sonar_tube(length = 25)
+{
+  mic_d = 16.1;
+
+  length_part1 = 10;
+  length_part2 = length - length_part1;
+
+  tube(h = length_part1, id = mic_d, wall = 1.2, anchor = BOT)
+  {
+    position(TOP) tube(h = length_part2, id1 = mic_d, id2 = 10, wall = 1.2, anchor = BOT);
+  }
+}
+
+module battery_holder_3AA(show_battery = false, anchor = CENTER, spin = 0, orient = UP)
+{
+  screw_hole_height = 6;
+  extra_room_other_places_than_screw = 1.4;
+  total_x = 58;
+  total_y = ELPARTS_BATTERY_3AA_Y;
+  total_z = 16.6 + screw_hole_height + extra_room_other_places_than_screw;
+  screw_d = 3.5;
+  screw_spacing = 30;
+  screw_offset_x = 29.1;
+  rest_d = 8;
+  rest_margin_x = 4;
+  rest_margin_y = 0.5;
+
+  attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
+  {
+    diff()
+    {
+      right(screw_offset_x) ycopies(spacing = screw_spacing, n = 2) position(BOT + LEFT)
+        tube(id = screw_d, wall = 2, h = screw_hole_height, anchor = BOT);
+      position(BOT) grid_copies(
+        n = [ 2, 2 ], spacing = [ (total_x)-rest_d - rest_margin_x * 2, total_y - rest_d - rest_margin_y * 2 ])
+        zcyl(d = rest_d, h = extra_room_other_places_than_screw + screw_hole_height, anchor = BOT);
+      if (show_battery)
+      {
+        color([ 0.5, 0.5, 0.5, 0.6 ]) position(BOT) cuboid([ total_x, total_y, total_z ], anchor = BOT);
+      }
+    }
+    children();
+  }
+}
+
+module piezosensor(d = 27.4, anchor = CENTER, spin = 0, orient = UP)
+{
+  connector_fastener_length = 10.9;
+  connector_fastener_thickness = 3;
+  connector_fastener_height = 4.25;
+  connector_fastener_isize_x = 4.9;
+  connector_fastener_isize_z = 2.25;
+
+  piezo_h = 0.4;
+  piezo_wall = 1.6;
+  piezo_tall_h = piezo_h + 4;
+
+  total_x = d + piezo_wall * 2;
+  total_y = d + piezo_wall * 2;
+  total_z = piezo_tall_h;
+
+  attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
+  {
+    down(total_z / 2) tag_diff("keep", keep = "keep_always") cuboid([ total_x, total_y, 0 ])
+    {
+      position(TOP) tube(id = d, wall = piezo_wall, h = piezo_h, anchor = BOT);
+      position(TOP) tube(id = d, wall = piezo_wall, h = piezo_tall_h, anchor = BOT)
+      {
+        tag("remove") position(BOT) up(piezo_h)
+          cube([ total_x, connector_fastener_isize_x, connector_fastener_isize_z ], anchor = BOT);
+        tag("remove") fwd(d / 2) position(BOT) up(piezo_h) xcopies(n = 2, spacing = 3)
+          ycyl(d = 2, h = 10, anchor = BOT);
+      }
+    }
+
+    // Not sure if this needs to be moved as well
+    children();
+  }
+}
+
+module piezosensor_fastener(d = 27.4) { button_fastener_long(gap = d, $slop = 0.08); }
+
+module ledstrip_ring(d = 95.5, led_count = 18, anchor = CENTER, spin = 0, orient = UP)
+{
+  led_count_per_meter = 60;
+  size_per_led = 1000 / led_count_per_meter;
+
+  o = size_per_led * led_count;
+  // d = o / PI;
+  echo("calculated d", o / PI);
+  echo("used d", d);
+
+  led_size = 5.2;
+  led_thickness = 2.2;
+  strip_width = 10.5;
+  strip_thickness = 0.8;
+  led_solder_thickness = 1.3;
+
+  h_before_led = (strip_width - led_size) / 2;
+
+  inner_wall = 1.2;
+  outer_wall = 1.2;
+
+  closing_height = 1;
+  total_d = d + led_thickness * 2 + outer_wall * 2;
+  total_z = strip_width + closing_height;
+
+  echo("total d included space and walls", total_d);
+  echo("total outer ring space", inner_wall + outer_wall + led_thickness);
+
+  attachable(anchor = anchor, spin = spin, orient = orient, d = total_d, l = total_z)
+  {
+    down(total_z / 2)
+    {
+      // Outer part
+      tag_scope() diff() tube(id = d + led_thickness * 2, wall = outer_wall, h = strip_width, anchor = BOT) {}
+
+      // Inner part
+      tag_scope() diff() tube(od = d, wall = inner_wall, h = strip_width, anchor = BOT)
+      {
+        // Opening
+        tag("remove") back(d / 2) cuboid([ 10, d / 2, strip_width ]);
+      }
+
+      // closing
+      // up(strip_width) tube(od = total_d, id = d - inner_wall * 2, h = closing_height, anchor = BOT);
+    }
+
     children();
   }
 }

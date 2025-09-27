@@ -18,7 +18,7 @@ friction_locks = false;
 
 // diff() cube([ 50, 60, 70 ], center = true) edge_profile([TOP]) mask2d_rabbet(size = 10);
 
-part = "box_rabbet";
+part = "preview";
 
 if (part == "preview")
 {

@@ -4,6 +4,10 @@ include<BOSL2\std.scad>;
 
 $fn = $preview ? 64 : 200;
 
+MICROBIT_BATTERY_PACK_X = 53.5;
+MICROBIT_BATTERY_PACK_Y = 25.8;
+MICROBIT_BATTERY_PACK_Z = 15.0;
+
 extra_for_better_removal = 0.001;
 
 mb_x = 51.6;
@@ -140,10 +144,13 @@ module microbit_connector_flush_hole(wall, anchor = CENTER, spin = 0, orient = U
   }
 }
 
-module microbit_connector(pins_to_show = [], pin_text = "40...1", anchor = CENTER, spin = 0, orient = UP)
+module microbit_connector(pins_to_show = [], pin_text = "40...1", anchor = CENTER, spin = 0, orient = UP,
+                          use_extra_support = false)
 {
   pin_width = 0.5;
   pin_distance = 1.278;
+
+  extra_support_x = use_extra_support ? 1.2 * 2 : 0;
 
   degree = 40;
 
@@ -161,7 +168,7 @@ module microbit_connector(pins_to_show = [], pin_text = "40...1", anchor = CENTE
   fastener_x = 5.6;
   fastener_y = 3;
   fastener_spacing = mb_connector_x - fastener_x + 2;
-  total_x = fastener_spacing + fastener_x;
+  total_x = fastener_spacing + fastener_x + extra_support_x;
   total_y = 22.5;
   total_z = wall + 10; // this is not accurate, but it's good enough for now
 
@@ -205,6 +212,12 @@ module microbit_connector(pins_to_show = [], pin_text = "40...1", anchor = CENTE
         }
       }
 
+      if (use_extra_support)
+      {
+        position(TOP + BACK) fwd(5) xcopies(n = 2, spacing = fastener_spacing + 6.8)
+          cuboid([ 1.2, 10, 12 ], anchor = BOT, chamfer = 2, edges = [ FWD, BACK ], except = [ BOT, LEFT, RIGHT ]);
+      }
+
       // Markings for pins
       color("red") fwd(5.2) position(TOP + BACK)
       {
@@ -220,7 +233,7 @@ module microbit_connector(pins_to_show = [], pin_text = "40...1", anchor = CENTE
           }
         }
 
-        back(4.9) position(RIGHT)
+        back(4.9) position(RIGHT) left(extra_support_x / 2)
           text3d(pin_text, h = 0.2, size = 4, font = "Arial", orient = UP, spin = 180, anchor = BOT + FWD + LEFT);
       }
     }
@@ -228,12 +241,13 @@ module microbit_connector(pins_to_show = [], pin_text = "40...1", anchor = CENTE
   }
 }
 
-module microbit_connector_hole(wall, anchor = CENTER, spin = 0, orient = UP)
+module microbit_connector_hole(wall, anchor = CENTER, spin = 0, orient = UP, use_extra_support = false)
 {
   // Warning: Numbers repeated from microbit_connector module
+  extra_support_x = use_extra_support ? 1.2 : 0;
   fastener_x = 5.6;
   fastener_spacing = mb_connector_x - fastener_x + 2;
-  total_x = fastener_spacing + fastener_x;
+  total_x = fastener_spacing + fastener_x + extra_support_x;
   total_y = 22.5;
   total_z = wall + extra_for_better_removal;
 
@@ -347,9 +361,9 @@ module microbit_connector_inside_hole(wall, anchor = CENTER, spin = 0, orient = 
 
 module microbit_battery_pack(anchor = CENTER, spin = 0, orient = UP)
 {
-  battery_pack_space_x = 53.5;
-  battery_pack_space_y = 25.8;
-  battery_pack_space_z = 15.0;
+  battery_pack_space_x = MICROBIT_BATTERY_PACK_X;
+  battery_pack_space_y = MICROBIT_BATTERY_PACK_Y;
+  battery_pack_space_z = MICROBIT_BATTERY_PACK_Z;
   attachable(anchor = anchor, spin = spin, orient = orient,
              size = [ battery_pack_space_x, battery_pack_space_y, battery_pack_space_z ])
   {
@@ -394,16 +408,21 @@ module microbit_connector_fastener()
   }
 }
 
-module microbit_soldering_guide(text = "micro:bit", pins_to_show = [], pins_to_bend = [], pin_text = "40...1")
+module microbit_soldering_guide(text = "micro:bit", pins_to_show = [], pins_to_bend = [], pins_to_bend_short = [],
+                                pin_text = "40...1")
 {
   pin_width = 0.5;
   pin_space_width = 0.4;
   pin_distance = 1.278;
-  bend_length = 5;
+  bend_length = 6;
+  bend_length_short = 3;
 
-  diff() cuboid([ 51.2, 11, 1 ])
+  extra_rest = 3 * 2;
+
+  diff() cuboid([ 51.2 + extra_rest, 11, 1 ])
   {
-    position(TOP + FWD) cuboid([ 51.2, 1, 9 ], anchor = TOP + FWD);
+    position(TOP + FWD) cuboid([ 51.2 + extra_rest, 1, 9 ], anchor = TOP + FWD);
+    position(TOP) xcopies(n = 2, spacing = 51.2 + extra_rest + 1) cuboid([ 1, 11, 9 ], anchor = TOP);
     // Markings for pins
     color("red") position(TOP + BACK)
     {
@@ -432,10 +451,23 @@ module microbit_soldering_guide(text = "micro:bit", pins_to_show = [], pins_to_b
               cuboid([ pin_width * 1.6, bend_length + extra_for_better_removal, 3 ], anchor = TOP + BACK);
           }
         }
+
+        for (pin_to_bend = pins_to_bend_short)
+        {
+          left(pin_to_bend * pin_distance)
+          {
+            tag("remove") back(extra_for_better_removal) up(1)
+              cuboid([ pin_width * 1.6, bend_length_short + extra_for_better_removal, 3 ], anchor = TOP + BACK);
+          }
+        }
       }
     }
     color("red") back(1) position(TOP + FWD + LEFT)
-      text3d(pin_text, h = 0.4, size = 4, font = "Arial", orient = UP, spin = 0, anchor = BOT + FWD + LEFT);
+      text3d(pin_text, h = 0.2, size = 4, font = "Arial", orient = UP, spin = 0, anchor = BOT + FWD + LEFT);
+
+    // Header text
+    fwd(0.5) color("red") position(TOP + BACK + LEFT)
+      text3d(text, h = 0.2, size = 4, font = "Arial", orient = UP, spin = 0, anchor = BOT + BACK);
   }
 }
 

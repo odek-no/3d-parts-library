@@ -5,10 +5,13 @@ include<el-parts.scad>;
 include<jst.scad>;
 include<microbit.scad>;
 include<misc.scad>;
+include<display.scad>;
+include<button.scad>;
 // clang-format on
 $slop = 0.08;
 
-part = "screw_test";
+// part = "sonar_hcsr04";
+part = "battery_holder_3AA";
 
 if (part == "box")
 {
@@ -42,6 +45,13 @@ else if (part == "toggle_button_grid")
     tag("remove") position(BOT)
       toggle_button_grid_hole(wall = 2.4, n = [ 2, 2 ], use_minimal_spacing = true, anchor = BOT);
     tag("keep") position(BOT) toggle_button_grid(n = [ 2, 2 ], use_minimal_spacing = true, anchor = BOT);
+  }
+}
+else if (part == "battery_holder_3AA")
+{
+  diff() cuboid([ 60, 48.5, 1.2 ], anchor = BOT)
+  {
+    position(TOP) battery_holder_3AA(show_battery = true, anchor = BOT);
   }
 }
 else if (part == "button_fastener_stick")
@@ -84,6 +94,38 @@ else if (part == "four_digit_display_seeed_studio")
       tag("keep") position(BOT + RIGHT) small_on_off_switch(anchor = BOT + RIGHT);
     }
   }
+}
+else if (part == "four_digit_display_catalex")
+{
+  diff() cuboid([ 55, 55, 1.2 ], anchor = BOT)
+  {
+    tag("remove") position(BOT) four_digit_display_catalex_hole(wall = 1.2, anchor = BOT, spin = 0);
+    tag("keep") position(BOT) four_digit_display_catalex(anchor = BOT, spin = 0);
+  }
+}
+else if (part == "sonar_hcsr04")
+{
+
+  diff() cuboid([ 50, 35, 1.2 ], anchor = BOT)
+  {
+    tag("remove") position(BOT) sonar_hcsr04_hole(wall = 1.2, anchor = BOT);
+    tag("keep") position(BOT) sonar_hcsr04(anchor = BOT);
+
+    // wall = 1.2;
+    // position(BOT) xcopies(n = 2, spacing = 50) cuboid([ wall, 50, 20 ], anchor = TOP);
+  }
+}
+else if (part == "oled_96x64")
+{
+  diff() cuboid([ 40, 40, 1.2 ], anchor = BOT)
+  {
+    tag("remove") position(BOT) oled_96x64_hole(type = "clone1", wall = 1.2, anchor = BOT);
+    tag("keep") position(BOT) oled_96x64(type = "clone1", anchor = BOT);
+  }
+}
+else if (part == "fastener_oled_96x64")
+{
+  fastener_oled_96x64();
 }
 else if (part == "sliding_potentiometer")
 {
@@ -244,4 +286,8 @@ else if (part == "screw_test")
   {
 #position(TOP) screw_hole("#4-32", length = 6, anchor = TOP);
   }
+}
+else if (part == "sonar_tube")
+{
+  sonar_tube(50);
 }
