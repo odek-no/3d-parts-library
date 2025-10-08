@@ -255,7 +255,8 @@ module box_sliding(width, length, height, wall = standard_wall, inner_walls = []
 }
 
 module box_sliding_lid(width, length, wall = standard_wall, extra_friction_stops = [], use_friction_lock = false,
-                       use_simple_lock = false, large_simple_lock = false, anchor = CENTER, spin = 0, orient = UP)
+                       use_simple_lock = false, large_simple_lock = false, anchor = CENTER, spin = 0, orient = UP,
+                       $slop = 0.08)
 {
   empty_x = width - wall * 2;
   empty_y = length - wall * 2;
@@ -397,4 +398,41 @@ module box_simple_lock_hole(width = 6, wall = standard_wall, anchor = CENTER, sp
 module box_shape(width, length, height, shape, wall = standard_wall, chamfer = 0, rounding = 2, anchor = CENTER,
                  spin = 0, orient = UP)
 {
+}
+
+module experiment_bit_lid_half_chamfered(anchor = CENTER, spin = 0, orient = UP)
+{
+  // This is needed in the box to make room for this lid
+  // tag("remove") down(lid_margin_z) position(TOP) zcyl(d = d - wall, h = wall, chamfer2 = wall / 2, anchor = TOP);
+  // tag("remove") position(TOP + BACK)
+  //   cuboid([ d, d / 2, lid_margin_z + wall + extra_for_better_removal ], anchor = TOP + BACK);
+
+  lid_margin_z = 0.5;
+  lid_d = d - wall;
+  lid_z = wall - get_slop();
+  total_z = lid_z + lid_margin_z;
+
+  attachable(anchor = anchor, spin = spin, orient = orient, d = lid_d, h = total_z)
+  {
+    tag_scope() diff() zcyl(d = lid_d, h = lid_z, chamfer2 = wall / 2, anchor = CENTER)
+    {
+      push_back = wall - 0.6;
+      position(CENTER + FWD) back(push_back)
+      {
+        simple_lock_width = 9;
+        tag("remove") box_simple_lock_hole(width = simple_lock_width, wall = lid_z + extra_for_better_removal,
+                                           anchor = CENTER + FWD);
+
+        tag("keep") box_simple_lock(width = simple_lock_width, wall = lid_z, anchor = CENTER + FWD);
+      }
+
+      position(BOT) difference()
+      {
+        tube(od = d, wall = lid_z, h = lid_margin_z + wall, anchor = BOT);
+
+        cuboid([ d, d / 2, lid_margin_z + wall + extra_for_better_removal ], anchor = BOT + FWD);
+      }
+    }
+    children();
+  }
 }

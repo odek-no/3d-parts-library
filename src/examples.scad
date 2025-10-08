@@ -11,7 +11,7 @@ include<button.scad>;
 $slop = 0.08;
 
 // part = "sonar_hcsr04";
-part = "battery_holder_3AA";
+part = "microbit_connector_fastener";
 
 if (part == "box")
 {
@@ -28,7 +28,7 @@ else if (part == "microbit_connector_flush")
 else if (part == "microbit_connector")
 {
   // microbit_connector_inside(anchor = BOT);
-  // microbit_connector(pins_to_show = [ 1, 23, 24, 25, 26, 35 ], pin_text = " G         23...1   ");
+  microbit_connector(pins_to_show = [ 1, 23, 24, 25, 26, 35 ], pin_text = " G         23...1   ");
 }
 else if (part == "microbit_connector_fastener")
 {

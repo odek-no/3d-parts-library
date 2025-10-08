@@ -12,6 +12,8 @@ extra_for_better_removal = 0.001;
 
 mb_x = 51.6;
 mb_y = 42.1;
+mb_z = 1.7;
+mb_z_including_buttons = 6.5;
 mb_connector_x = 57.2;
 mb_buttons_size = 6.5 + 0.3;
 
@@ -525,5 +527,100 @@ module microbit_soldering_guide_v1(text = "micro:bit", pins_to_show = [], pins_t
     // Header text
     fwd(1) color("red") position(TOP + BACK)
       text3d(text, h = 0.2, size = 4, font = "Arial", orient = UP, spin = 0, anchor = BOT + BACK);
+  }
+}
+
+module microbit_simple_holder(h = 5, include_board = false, include_fasteners = false, anchor = CENTER, spin = 0,
+                              orient = UP)
+{
+  assert(h >= 5);
+  d = 3.6;
+  adjustment_for_screw_tightness = 0.1;
+  thickness = include_board ? 2 : 0;
+  connector_fastener_thickness = 3;
+  connector_fastener_isize_z = 2.25;
+  connector_fastener_wall_top = 2;
+
+  actual_fasteners_thickness = include_fasteners ? connector_fastener_thickness : 0;
+  actual_fasteners_extra_height =
+    include_fasteners ? mb_z + connector_fastener_isize_z + connector_fastener_wall_top : 0;
+
+  total_x = mb_x + actual_fasteners_thickness * 2;
+  total_y = mb_y;
+  total_z = h + thickness + actual_fasteners_extra_height;
+
+  echo("microbit_simple_holder total_z", total_z);
+  echo("microbit_simple_holder needed z including microbit", total_z + mb_z_including_buttons);
+
+  attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
+  {
+    down(total_z / 2) tag_diff("keep", keep = "keep_always")
+      cuboid([ total_x, mb_y, thickness ], edges = [BOT], anchor = BOT)
+    {
+      back(3) position(TOP + FWD) xcopies(n = 2, spacing = 43.0)
+        tube(wall = 2 + adjustment_for_screw_tightness / 2, id = d - adjustment_for_screw_tightness, height = h,
+             anchor = BOT + FWD)
+      {
+        // Close the bottom if high tubes
+        position(BOT) zcyl(d = d + 2, h = h - 5, anchor = BOT);
+
+        // Hole for wire
+        tag("remove") fwd(0.5) up(extra_for_better_removal) position(TOP + FWD)
+          cuboid([ 1.5, 3, 4 ], anchor = TOP + FWD);
+      }
+      back(3) position(TOP + FWD) xcopies(n = 3, spacing = 11.5)
+        tube(wall = 2 + adjustment_for_screw_tightness / 2, id = d - adjustment_for_screw_tightness, height = h,
+             anchor = BOT + FWD)
+      {
+        // Close the bottom if high tubes
+        position(BOT) zcyl(d = d + 2, h = h - 5, anchor = BOT);
+
+        // Hole for wire
+        tag("remove") fwd(0.5) up(extra_for_better_removal) position(TOP + FWD)
+          cuboid([ 1.5, 3, 4 ], anchor = TOP + FWD);
+      };
+
+      position(TOP + BACK + LEFT) right(actual_fasteners_thickness) cuboid([ 2.5, 4, h ], anchor = BOT + BACK + LEFT);
+      position(TOP + BACK + RIGHT) left(actual_fasteners_thickness) cuboid([ 4, 4, h ], anchor = BOT + BACK + RIGHT);
+
+      if (include_fasteners)
+      {
+        position(TOP + BACK) fastener_pair(mb_x, h + mb_z, anchor = BOT + BACK);
+      }
+
+      if (include_board)
+      {
+        // Space for battery jst connector
+        tag("remove") right(2.5) up(extra_for_better_removal) position(TOP + BACK + LEFT)
+          right(actual_fasteners_thickness) back(extra_for_better_removal)
+            cuboid([ 8.5, 6.5 + extra_for_better_removal, 1 + extra_for_better_removal ], anchor = TOP + BACK + LEFT);
+        // Space for reset button
+        tag("remove") right(2.5 + 9.5) up(extra_for_better_removal / 2) position(TOP + BACK + LEFT)
+          right(actual_fasteners_thickness) back(extra_for_better_removal) cuboid(
+            [ 7.5, 6.5 + extra_for_better_removal, thickness + extra_for_better_removal ], anchor = TOP + BACK + LEFT);
+      }
+    }
+    children();
+  }
+}
+
+module microbit_simple_holder_fastener() { button_fastener_long(gap = mb_x, $slop = 0.08); }
+
+module microbit_simple_holder_wire_plug()
+{
+  d = 3.3;
+  diff() cuboid([ 3, mb_x, 10 ], anchor = BOT)
+  {
+    // position(LEFT)xcyl(d=d, h=5+1.5, anchor=RIGHT);
+    position(LEFT + BOT) ycopies(n = 2, spacing = 43.0) xcyl(d = d, h = 5 + 1.5, anchor = RIGHT + BOT);
+    position(LEFT + BOT) ycopies(n = 3, spacing = 11.5) xcyl(d = d, h = 5 + 1.5, anchor = RIGHT + BOT);
+
+    position(RIGHT + TOP) cuboid([ 11, mb_x, 2 ], anchor = BOT + RIGHT)
+    {
+      tag("remove") left(3) position(RIGHT + BOT) ycopies(n = 2, spacing = 43.0)
+        zcyl(d = 2.5, h = 2, anchor = RIGHT + BOT);
+      tag("remove") left(3) position(RIGHT + BOT) ycopies(n = 3, spacing = 11.5)
+        zcyl(d = 2.5, h = 2, anchor = RIGHT + BOT);
+    }
   }
 }
