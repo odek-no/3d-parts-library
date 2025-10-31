@@ -171,53 +171,26 @@ module wire_cutter_guide_wire_stopper()
   cuboid([ 1.3, 20, 1.7 ], anchor = BOT) { position(FWD + BOT) cuboid([ 10, 4, 6 ], anchor = BOT + BACK); }
 }
 
-module wire_holder_bottom(count)
+module wire_holder(count = 1)
 {
-  hole_d = 3.6;
-  h = 20;
-  hatch_x = 10;
-  hatch_y = 2;
-  hatch_z = 7;
+  base_y = 30;
+  base_h = 2.4;
+  extra_h = 20;
+  holder_h = 10;
+  width = 1.2;
+  spacing_between_holder_arms = 0.3;
+  spacing_between_holders = 15;
+  holder_y = 5;
 
-  diff() cuboid([ 10, count * 10 + 4, h ], anchor = BOT)
+  cuboid([ count * spacing_between_holders, base_y, base_h ], anchor = FWD, orient = FWD)
   {
-    position(BOT) cuboid([ 20, count * 10 + 4, 2 ], anchor = BOT);
-    position(BOT + BACK) cuboid([ 20, 3, h + 2.4 + 3 ], anchor = BOT + BACK)
+    position(FWD) cuboid([ count * spacing_between_holders, holder_y, extra_h ], anchor = BOT + FWD) position(TOP)
+      xcopies(n = count, spacing = spacing_between_holders)
     {
-      down(3 - 0.6) tag("remove") position(TOP) cuboid([ 10 + 0.6, 4, 2.4 + 0.6 ], anchor = TOP);
+      xflip_copy(offset = width / 2 + spacing_between_holder_arms) cuboid([ width, holder_y, holder_h ], anchor = BOT)
+      {
+        position(TOP + LEFT) yrot(-45) cuboid([ 4, holder_y, width ], anchor = TOP + LEFT);
+      }
     }
-
-    position(BOT + FWD) cuboid([ 20, 5, 8 ], anchor = BOT + BACK)
-    {
-      tag("remove") up(extra_for_better_removal) position(TOP + BACK)
-        cuboid([ hatch_x + 0.2, hatch_y + 0.06, hatch_z + extra_for_better_removal ], anchor = TOP + BACK);
-    }
-    ycopies(n = count, spacing = 10) tag("remove") position(TOP)
-      xcyl(d = hole_d, h = 10 + extra_for_better_removal, anchor = CENTER);
-  }
-}
-
-module wire_holder_bottom_hatch()
-{
-  h = 20;
-  wire_holder_top_wall = 2.4;
-  hatch_x = 10;
-  hatch_y = 2;
-  cuboid([ hatch_x, h - 1.5 + wire_holder_top_wall, hatch_y ], anchor = BOT)
-  {
-    position(BOT + FWD) cuboid([ hatch_x, 2, hatch_y + 2 ], anchor = BOT + BACK);
-  }
-}
-
-module wire_holder_top(count, d)
-{
-  wall = 2.4;
-  hole_d = 3.6;
-  diff_d = hole_d / 2 - d;
-  cyl_d = diff_d;
-  diff() cuboid([ 10, count * 10 + 4, wall ], anchor = BOT)
-  {
-    ycopies(n = count, spacing = 10) ycopies(n = 3, spacing = 1.2) position(TOP)
-      cuboid([ 10, 0.8, cyl_d ], anchor = BOT);
   }
 }

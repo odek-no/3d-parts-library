@@ -4,7 +4,4 @@
 @REM openscad -D "part=\"wire_cutter_guide_1_4\"" -o stl/tools/wire_cutter_guide_1_4-v1.stl src/tools.scad
 
 
-@REM openscad -D "part=\"wire_holder_bottom\"" -o stl/tools/wire_holder_bottom-v1.stl src/tools.scad
-@REM openscad -D "part=\"wire_holder_bottom_hatch\"" -o stl/tools/wire_holder_bottom_hatch-v1.stl src/tools.scad
-openscad -D "part=\"wire_holder_top_1_4\"" -o stl/tools/wire_holder_top_1_4-v1.stl src/tools.scad
-openscad -D "part=\"wire_holder_top_1_1\"" -o stl/tools/wire_holder_top_1_1-v1.stl src/tools.scad
+openscad -D "part=\"wire_holder\"" -o stl/tools/wire_holder-v1.stl src/tools.scad
