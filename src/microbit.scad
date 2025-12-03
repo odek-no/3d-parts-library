@@ -535,19 +535,32 @@ module microbit_simple_holder(h = 5, include_board = false, include_fasteners = 
 {
   assert(h >= 5);
   d = 3.6;
+  tube_wall = 3;
   adjustment_for_screw_tightness = 0.1;
   thickness = include_board ? 2 : 0;
   connector_fastener_thickness = 3;
   connector_fastener_isize_z = 2.25;
   connector_fastener_wall_top = 2;
 
+  extra_x_for_better_supports = 4;
+
+  connector_plug_w = 2.6;
+  connector_plug_h = 2.2;
+  connector_offset_z = 3.2;
+
   actual_fasteners_thickness = include_fasteners ? connector_fastener_thickness : 0;
   actual_fasteners_extra_height =
     include_fasteners ? mb_z + connector_fastener_isize_z + connector_fastener_wall_top : 0;
 
-  total_x = mb_x + actual_fasteners_thickness * 2;
+  margin_for_tube = 1;
+
+  total_x = mb_x + actual_fasteners_thickness * 2 + extra_x_for_better_supports;
   total_y = mb_y;
   total_z = h + thickness + actual_fasteners_extra_height;
+
+  // 1.2 er visst bare bra i noen tilfeller. Må finne ut hva jeg egentlig bør bruke her
+  // hole_from_bottom = connector_offset_z + 1.2;
+  hole_from_bottom = connector_offset_z + connector_plug_h / 2;
 
   echo("microbit_simple_holder total_z", total_z);
   echo("microbit_simple_holder needed z including microbit", total_z + mb_z_including_buttons);
@@ -557,31 +570,57 @@ module microbit_simple_holder(h = 5, include_board = false, include_fasteners = 
     down(total_z / 2) tag_diff("keep", keep = "keep_always")
       cuboid([ total_x, mb_y, thickness ], edges = [BOT], anchor = BOT)
     {
-      back(3) position(TOP + FWD) xcopies(n = 2, spacing = 43.0)
-        tube(wall = 2 + adjustment_for_screw_tightness / 2, id = d - adjustment_for_screw_tightness, height = h,
-             anchor = BOT + FWD)
+      back(3) position(TOP + FWD)
+        cuboid([ total_x, d + tube_wall * 2, h - margin_for_tube ], rounding = (d + tube_wall * 2) / 2,
+               edges = [ FWD, BACK ], except = [ TOP, BOT ], anchor = BOT + FWD)
       {
-        // Close the bottom if high tubes
-        position(BOT) zcyl(d = d + 2, h = h - 5, anchor = BOT);
-
-        // Hole for wire
-        tag("remove") fwd(0.5) up(extra_for_better_removal) position(TOP + FWD)
-          cuboid([ 1.5, 3, 4 ], anchor = TOP + FWD);
+        tag("remove") xcopies(n = 2, spacing = 43.0)
+        {
+          tag("keep") position(TOP)
+            tube(wall = 1.2, id = d - adjustment_for_screw_tightness, height = margin_for_tube, anchor = BOT);
+          down(hole_from_bottom) position(TOP)
+            zcyl(d = d - adjustment_for_screw_tightness, h = h + extra_for_better_removal, anchor = BOT);
+          up(extra_for_better_removal) down(connector_offset_z) up(margin_for_tube) position(TOP)
+            cuboid([ connector_plug_w, 10, connector_plug_h ], anchor = TOP);
+        }
+        tag("remove") xcopies(n = 3, spacing = 11.5)
+        {
+          tag("keep") position(TOP)
+            tube(wall = 1.2, id = d - adjustment_for_screw_tightness, height = margin_for_tube, anchor = BOT);
+          down(hole_from_bottom) position(TOP)
+            zcyl(d = d - adjustment_for_screw_tightness, h = h + extra_for_better_removal, anchor = BOT);
+          up(extra_for_better_removal) down(connector_offset_z) up(margin_for_tube) position(TOP)
+            cuboid([ connector_plug_w, 10, connector_plug_h ], anchor = TOP);
+        }
       }
-      back(3) position(TOP + FWD) xcopies(n = 3, spacing = 11.5)
-        tube(wall = 2 + adjustment_for_screw_tightness / 2, id = d - adjustment_for_screw_tightness, height = h,
-             anchor = BOT + FWD)
-      {
-        // Close the bottom if high tubes
-        position(BOT) zcyl(d = d + 2, h = h - 5, anchor = BOT);
 
-        // Hole for wire
-        tag("remove") fwd(0.5) up(extra_for_better_removal) position(TOP + FWD)
-          cuboid([ 1.5, 3, 4 ], anchor = TOP + FWD);
-      };
+      // back(3) position(TOP + FWD) xcopies(n = 2, spacing = 43.0)
+      // tube(wall = tube_wall + adjustment_for_screw_tightness / 2, id = d - adjustment_for_screw_tightness, height =
+      // h,
+      //      anchor = BOT + FWD)
+      // {
+      //   // Hole for wire
+      //   tag("remove") up(extra_for_better_removal) down(connector_offset_z) position(TOP)
+      //     cuboid([ connector_plug_w, 10, connector_plug_h ], anchor = TOP);
+      // }
 
-      position(TOP + BACK + LEFT) right(actual_fasteners_thickness) cuboid([ 2.5, 4, h ], anchor = BOT + BACK + LEFT);
-      position(TOP + BACK + RIGHT) left(actual_fasteners_thickness) cuboid([ 4, 4, h ], anchor = BOT + BACK + RIGHT);
+      // back(3) position(TOP + FWD) xcopies(n = 3, spacing = 11.5)
+      //   tube(wall = tube_wall + adjustment_for_screw_tightness / 2, id = d - adjustment_for_screw_tightness, height =
+      //   h,
+      //        anchor = BOT + FWD)
+      // {
+      //   // Hole for wire
+      //   tag("remove") up(extra_for_better_removal) down(connector_offset_z - 0.1) position(TOP)
+      //     cuboid([ connector_plug_w, d + tube_wall * 2 + 2, connector_plug_h ], anchor = TOP);
+      // };
+
+      position(TOP + BACK + LEFT) right(actual_fasteners_thickness)
+        cuboid([ 2.5 + extra_x_for_better_supports / 2, 4, h ], anchor = BOT + BACK + LEFT) position(TOP + BACK + LEFT)
+          cuboid([ extra_x_for_better_supports / 2, 4, mb_z ], anchor = BOT + BACK + LEFT);
+
+      position(TOP + BACK + RIGHT) left(actual_fasteners_thickness)
+        cuboid([ 4 + extra_x_for_better_supports / 2, 4, h ], anchor = BOT + BACK + RIGHT) position(TOP + BACK + RIGHT)
+          cuboid([ extra_x_for_better_supports / 2, 4, mb_z ], anchor = BOT + BACK + RIGHT);
 
       if (include_fasteners)
       {
@@ -592,11 +631,11 @@ module microbit_simple_holder(h = 5, include_board = false, include_fasteners = 
       {
         // Space for battery jst connector
         tag("remove") right(2.5) up(extra_for_better_removal) position(TOP + BACK + LEFT)
-          right(actual_fasteners_thickness) back(extra_for_better_removal)
+          right(actual_fasteners_thickness + extra_x_for_better_supports / 2) back(extra_for_better_removal)
             cuboid([ 8.5, 6.5 + extra_for_better_removal, 1 + extra_for_better_removal ], anchor = TOP + BACK + LEFT);
         // Space for reset button
         tag("remove") right(2.5 + 9.5) up(extra_for_better_removal / 2) position(TOP + BACK + LEFT)
-          right(actual_fasteners_thickness) back(extra_for_better_removal) cuboid(
+          right(actual_fasteners_thickness + extra_x_for_better_supports / 2) back(extra_for_better_removal) cuboid(
             [ 7.5, 6.5 + extra_for_better_removal, thickness + extra_for_better_removal ], anchor = TOP + BACK + LEFT);
       }
     }

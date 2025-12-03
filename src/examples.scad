@@ -11,7 +11,7 @@ include<button.scad>;
 $slop = 0.08;
 
 // part = "sonar_hcsr04";
-part = "microbit_connector_fastener";
+part = "battery_holder_aa";
 
 if (part == "box")
 {
@@ -290,4 +290,16 @@ else if (part == "screw_test")
 else if (part == "sonar_tube")
 {
   sonar_tube(50);
+}
+else if (part == "battery_holder_triangle_aa")
+{
+  battery_holder_triangle_aa();
+}
+else if (part == "battery_holder_2x_aa")
+{
+  battery_holder_2x_aa();
+}
+else if (part == "battery_holder_aa")
+{
+  battery_holder_aa();
 }

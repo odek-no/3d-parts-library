@@ -284,6 +284,7 @@ module sonar_tube(length = 25)
 
 module battery_holder_3AA(show_battery = false, anchor = CENTER, spin = 0, orient = UP)
 {
+  // OBSOLETE!!!
   screw_hole_height = 6;
   extra_room_other_places_than_screw = 1.4;
   total_x = 58;
@@ -338,9 +339,9 @@ module piezosensor(d, anchor = CENTER, spin = 0, orient = UP)
       position(TOP) tube(id = d, wall = piezo_wall, h = piezo_tall_h, anchor = BOT)
       {
         tag("remove") position(BOT) up(piezo_h)
-          cube([ total_x, connector_fastener_isize_x + 0.2, connector_fastener_isize_z ], anchor = BOT);
-        tag("remove") back(d / 2) position(BOT) up(piezo_h) xcopies(n = 2, spacing = 3)
-          ycyl(d = 2, h = 10, anchor = BOT);
+          cube([ total_x, connector_fastener_isize_x + 0.2, connector_fastener_isize_z + 0.6 ], anchor = BOT);
+        tag("remove") back(d / 2) position(BOT) up(piezo_h + 1) xcopies(n = 2, spacing = 3)
+          ycyl(d = 2.5, h = 10, anchor = BOT);
       }
     }
 
@@ -349,11 +350,12 @@ module piezosensor(d, anchor = CENTER, spin = 0, orient = UP)
   }
 }
 
-module piezosensor_fastener(d) { button_fastener_long(gap = d, $slop = 0.08); }
+module piezosensor_fastener(d) { button_fastener_long(gap = d); }
 
-module ledstrip_ring(d = 83, led_count = 16, anchor = CENTER, spin = 0, orient = UP)
+module ledstrip_ring(d = 83.6, led_count = 16, anchor = CENTER, spin = 0, orient = UP)
 {
-  // 18 leds: d=93.5;
+  // 18 leds: d=93.5 ?
+  // 16 leds: d=83.6;
 
   led_count_per_meter = 60;
   size_per_led = 1000 / led_count_per_meter;
@@ -371,13 +373,12 @@ module ledstrip_ring(d = 83, led_count = 16, anchor = CENTER, spin = 0, orient =
   strip_thickness = 0.8;
   led_solder_thickness = 1.3;
 
-  inner_wall = 3;
-  inner_wall_upper = 1.2;
+  inner_wall = 2;
 
-  inner_lower_part_h = 2;
+  inner_lower_part_h = 1.2;
 
   strip_fastener_h = 1;
-  strip_fastener_w = 1.1;
+  strip_fastener_w = 2.2;
 
   total_d = d + strip_fastener_w * 2;
   total_z = led_strip_width + strip_fastener_h;
@@ -388,87 +389,107 @@ module ledstrip_ring(d = 83, led_count = 16, anchor = CENTER, spin = 0, orient =
   {
     down(total_z / 2)
     {
-      tag_scope() diff() tube(od1 = d, id1 = d - inner_wall * 2, od2 = d, id2 = d - inner_wall_upper * 2,
-                              h = led_strip_width, anchor = BOT)
+      tag_scope() diff() tube(od = d, id = d - inner_wall * 2, h = led_strip_width, anchor = BOT)
       {
-        position(TOP) tube(od1 = d, id1 = d - inner_wall_upper * 2, od2 = d + strip_fastener_w * 2,
-                           id2 = d - inner_wall_upper * 2, h = strip_fastener_h, anchor = BOT);
-
-        tag("remove") zrot(360 / led_count / 2) up(inner_lower_part_h) position(BOT) rot_copies(n = led_count)
-          back(d / 2) cuboid([ 9, d / 2, led_strip_width ], anchor = BOT);
+        position(TOP) tube(od = d + strip_fastener_w * 2, id = d - inner_wall * 2, h = strip_fastener_h, anchor = BOT);
 
         // Space for wires
-        tag("remove") up(inner_lower_part_h) position(BOT) fwd(d / 2) cuboid([ 4, d / 2, 20 ], anchor = BOT);
+        tag("remove") up(inner_lower_part_h) position(BOT) back(d / 2)
+          cuboid([ 5, d / 2, led_strip_width - inner_lower_part_h ], anchor = BOT);
+
+#tag("keep") up(inner_lower_part_h) position(BOT + BACK) right(1.7)
+        cuboid([ 1.2, 4.5, led_strip_width - inner_lower_part_h ], anchor = BOT, spin = 35);
       }
-
-      // // Inner lower part
-      // tube(od = d, wall = inner_wall, h = led_strip_width, anchor = BOT);
-
-      // // Inner upper part
-      // up(inner_lower_part_h)
-      // {
-      //   tag_scope() diff() tube(od1 = d, id1 = d - inner_wall * 2, od2 = d, id2 = d - inner_wall_upper * 2,
-      //                           h = inner_upper_part_1_h, anchor = BOT)
-      //   {
-      //     position(TOP) tube(od = d, wall = inner_wall_upper,
-      //                        h = led_strip_width - inner_upper_part_1_h - inner_lower_part_h, anchor = BOT)
-      //     {
-      //       position(TOP) tube(od1 = d, id1 = d - inner_wall_upper * 2, od2 = d + strip_fastener_w * 2,
-      //                          id2 = d - inner_wall_upper * 2, h = strip_fastener_h, anchor = BOT);
-      //     }
-
-      //     tag("remove") up(inner_upper_part_1_h) position(BOT) rot_copies(n = led_count) back(d / 2)
-      //       cuboid([ 9, d / 2, led_strip_width ], anchor = BOT);
-      //   }
-      // }
     }
 
     children();
   }
 }
 
-module battery_holder_triangle_aa(anchor = CENTER, spin = 0, orient = UP)
+module battery_holder_triangle_aa(is_hole_maker = false, anchor = CENTER, spin = 0, orient = UP)
 {
-  holder_plus_thickness = 0.5;
-  holder_minus_thickness = 0.6;
+  holder_plus_thickness = 0.55;
+  holder_minus_thickness = 0.7;
   battery_h = 50.5;
 
+  wall = 1.2;
   zrot_d = 46.8;
 
-  difference()
+  if (is_hole_maker)
   {
-    zrot_copies(n = 3, d = zrot_d) { battery_holder_aa(spin = 90, anchor = BOT); }
+    zrot_copies(n = 3, d = zrot_d) { battery_holder_aa(is_hole_maker = true, spin = 90, anchor = BOT); }
+  }
+  else
+  {
 
-    zrot_copies(n = 3, d = zrot_d)
+    difference()
     {
-      if ($idx != 1)
-      {
-        up(3) back(battery_h / 2 + 2.55) left(5.1)
-          cuboid([ 5, holder_minus_thickness + 0.2, 11 + extra_for_better_removal ], anchor = BOT);
-      }
+      zrot_copies(n = 3, d = zrot_d) { battery_holder_aa(hole_for_minus_plug = $idx == 1, spin = 90, anchor = BOT); }
 
-      if ($idx != 2)
+      zrot_copies(n = 3, d = zrot_d)
       {
-        up(3) fwd(battery_h / 2 + 2.45) left(5.1)
-          cuboid([ 5, holder_plus_thickness + 0.2, 11 + extra_for_better_removal ], anchor = BOT);
+        if ($idx != 1)
+        {
+          up(wall + 3) back(battery_h / 2 + 2.55) left(5.1)
+            cuboid([ 5, holder_minus_thickness + 0.2, 11 + extra_for_better_removal ], anchor = BOT);
+        }
 
-        // The little dot
-        up(5) fwd(battery_h / 2 + 2.25) left(6.1) cuboid([ 3, 1.1, 9 + extra_for_better_removal ], anchor = BOT);
+        if ($idx != 2)
+        {
+          up(wall + 3) fwd(battery_h / 2 + 2.45) left(5.1)
+            cuboid([ 5, holder_plus_thickness + 0.2, 11 + extra_for_better_removal ], anchor = BOT);
+
+          // The little dot
+          up(wall + 3) fwd(battery_h / 2 + 2.25) left(6.1)
+            cuboid([ 3, 1.1, 11 + extra_for_better_removal ], anchor = BOT);
+        }
+
+        // Need to make room once again for the hole for the plus part
+        {
+          up(2 + wall) fwd(battery_h / 2 + 2.55)
+            cuboid([ 12, holder_plus_thickness, 11 + extra_for_better_removal ], anchor = BOT);
+        }
       }
     }
   }
 }
-module battery_holder_aa(anchor = CENTER, spin = 0, orient = UP)
+
+module battery_holder_2x_aa()
+{
+  holder_plus_thickness = 0.55;
+  holder_minus_thickness = 0.7;
+  battery_h = 50.5;
+  wall = 1.2;
+  battery_d = 14.6;
+
+  spacing = battery_d + wall;
+
+  difference()
+  {
+    ycopies(n = 2, spacing = spacing)
+    {
+      zrot($idx % 2 == 0 ? 0 : 180) battery_holder_aa(hole_for_minus_plug = $idx == 0, anchor = BOT);
+    }
+
+    // Join the two holders
+    up(wall + 3) left(battery_h / 2 + 2.55)
+      cuboid([ holder_plus_thickness + 0.2, 8, 11 + extra_for_better_removal ], anchor = BOT);
+    // // The little dot
+    up(wall + 3) fwd(1.9) left(battery_h / 2 + 2.25) cuboid([ 1.1, 3, 11 + extra_for_better_removal ], anchor = BOT);
+  }
+}
+
+module battery_holder_aa(hole_for_minus_plug = true, is_hole_maker = false, anchor = CENTER, spin = 0, orient = UP)
 {
   wall = 1.2;
 
   battery_d = 14.6;
   battery_h = 50.5;
 
-  holder_plus_thickness = 0.5;
+  holder_plus_thickness = 0.55;
   holder_plus_height = 11.3;
 
-  holder_minus_thickness = 0.6;
+  holder_minus_thickness = 0.7;
   holder_minus_solder_d = 0.6;
   holder_minus_big_d = 8.8;
   holder_minus_small_d = 3.2;
@@ -478,51 +499,64 @@ module battery_holder_aa(anchor = CENTER, spin = 0, orient = UP)
 
   battery_h_spring_adjustment = 2.5;
 
-  total_x = battery_h + plus_part_thickness + minus_part_thickness + battery_h_spring_adjustment;
-  total_y = battery_d + wall * 2;
-  total_z = battery_d + wall;
+  hole_maker_slop = 0.1;
+  extra_if_hole_maker = is_hole_maker ? hole_maker_slop : 0;
+
+  total_x = battery_h + plus_part_thickness + minus_part_thickness + battery_h_spring_adjustment + extra_if_hole_maker;
+  total_y = battery_d + wall * 2 + extra_if_hole_maker;
+  total_z = battery_d + wall + extra_if_hole_maker;
 
   echo("battery_holder_aa total_z", total_z);
 
   attachable(anchor = anchor, spin = spin, orient = orient, size = [ total_x, total_y, total_z ])
   {
-    down(total_z / 2) tag_scope() diff() cuboid([ total_x, total_y, wall ], anchor = BOT)
+    if (is_hole_maker)
     {
-      position(TOP + LEFT) right(plus_part_thickness) ycopies(n = 2, spacing = battery_d + wall)
-        cuboid([ battery_h + battery_h_spring_adjustment, wall, battery_d ], anchor = BOT + LEFT);
-
-      // Plus
-      position(TOP + LEFT) cuboid([ plus_part_thickness, battery_d + wall * 2, 13 ], anchor = BOT + LEFT)
+      cuboid([ total_x, total_y, total_z ]);
+    }
+    else
+    {
+      down(total_z / 2) tag_scope() diff() cuboid([ total_x, total_y, wall ], anchor = BOT)
       {
-        tag("remove") up(extra_for_better_removal) position(TOP + RIGHT)
+        position(TOP + LEFT) right(plus_part_thickness) ycopies(n = 2, spacing = battery_d + wall)
+          cuboid([ battery_h + battery_h_spring_adjustment, wall, battery_d ], anchor = BOT + LEFT);
+
+        // Plus
+        position(TOP + LEFT) cuboid([ plus_part_thickness, battery_d + wall * 2, 13 ], anchor = BOT + LEFT)
         {
-          // left(1) back(5) cuboid([ holder_plus_thickness, 11.5, 10 + extra_for_better_removal ], anchor = TOP +
-          // RIGHT);
-          left(1) cuboid([ holder_plus_thickness, 12, 11 + extra_for_better_removal ], anchor = TOP + RIGHT);
-          right(extra_for_better_removal)
-            cuboid([ 1 + extra_for_better_removal, 7, 9 + extra_for_better_removal ], anchor = TOP + RIGHT);
+          tag("remove") up(extra_for_better_removal) position(TOP + RIGHT)
+          {
+            // left(1) back(5) cuboid([ holder_plus_thickness, 11.5, 10 + extra_for_better_removal ], anchor = TOP +
+            // RIGHT);
+            left(1) cuboid([ holder_plus_thickness, 12, 11 + extra_for_better_removal ], anchor = TOP + RIGHT);
+            right(extra_for_better_removal)
+              cuboid([ 1 + extra_for_better_removal, 7, 9 + extra_for_better_removal ], anchor = TOP + RIGHT);
+          }
         }
-      }
 
-      // Minus
-      position(TOP + RIGHT) cuboid([ minus_part_thickness, battery_d + wall * 2, 13 ], anchor = BOT + RIGHT)
-      {
-        tag("remove") up(extra_for_better_removal) position(TOP + LEFT)
+        // Minus
+        position(TOP + RIGHT) cuboid([ minus_part_thickness, battery_d + wall * 2, 13 ], anchor = BOT + RIGHT)
         {
+          tag("remove") up(extra_for_better_removal) position(TOP + LEFT)
+          {
 
-          right(1) cuboid([ holder_minus_thickness, 9, 11 + extra_for_better_removal ], anchor = TOP + LEFT);
+            right(1) cuboid([ holder_minus_thickness, 9, 11 + extra_for_better_removal ], anchor = TOP + LEFT);
 
-          left(extra_for_better_removal)
-            cuboid([ 1 + extra_for_better_removal, 7, 9 + extra_for_better_removal ], anchor = TOP + LEFT);
+            left(extra_for_better_removal)
+              cuboid([ 1 + extra_for_better_removal, 7, 9 + extra_for_better_removal ], anchor = TOP + LEFT);
 
-          // Hole for wire
-          left(extra_for_better_removal / 2)
-            cuboid([ minus_part_thickness + extra_for_better_removal, 1, 8 ], anchor = TOP + LEFT);
+            // Hole for wire
+            if (hole_for_minus_plug)
+            {
+              left(extra_for_better_removal / 2)
+                cuboid([ minus_part_thickness + extra_for_better_removal, 1, 8 ], anchor = TOP + LEFT);
+            }
+          }
         }
-      }
 
-      tag("remove") position(BOT) down(extra_for_better_removal / 2) xcopies(n = 10, spacing = battery_h / 10)
-        cuboid([ 3, battery_d, wall + extra_for_better_removal ], anchor = BOT);
+        tag("remove") position(BOT) down(extra_for_better_removal / 2) xcopies(n = 11, spacing = battery_h / 10)
+          cuboid([ 3, battery_d, wall + extra_for_better_removal ], anchor = BOT);
+      }
     }
     children();
   }

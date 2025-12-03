@@ -436,3 +436,34 @@ module experiment_bit_lid_half_chamfered(anchor = CENTER, spin = 0, orient = UP)
     children();
   }
 }
+
+module box_cylinder_turnable_lid(anchor = CENTER, spin = 0, orient = UP, $slop = 0.3)
+{
+  count_lid_holes = 8;
+  lid_hole_d = 15;
+
+  lid_d = d - wall * 2 - get_slop();
+  lid_z = wall_lid;
+
+  // The ears are sticking out wall/2 on three sides, so we need to add wall to the total diameter
+  total_d = lid_d + wall;
+  total_z = lid_z;
+
+  attachable(anchor = anchor, spin = spin, orient = orient, d = total_d, h = total_z)
+  {
+    tag_scope() diff() zcyl(d = lid_d, h = lid_z, anchor = CENTER)
+    {
+      position(TOP) zrot_copies(n = count_lid_holes, d = lid_d - lid_hole_d + wall)
+        zcyl(d = lid_hole_d, h = lid_z, anchor = TOP)
+      {
+        // Don't know why i have to lift it 0.3 first to get it at the top
+        // tag("remove") position(TOP + RIGHT) left(0.6) down(-0.3 + 0.6) sphere(d = 2, anchor = BOT + RIGHT, $fn =
+        // 32);
+      }
+
+      tag("remove") down(extra_for_better_removal) position(BOT)
+        cuboid([ d - 30, 2, 1.2 + extra_for_better_removal ], anchor = BOT);
+    }
+    children();
+  }
+}
